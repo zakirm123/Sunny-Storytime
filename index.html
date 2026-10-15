@@ -5,102 +5,49 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Sunny Storytime Chapter 1 - Brothers Playtime</title>
     <style>
-        body {
-            margin: 0; 
-            overflow: hidden; 
-            background-color: #000;
-            font-family: 'Courier New', Courier, monospace;
-            user-select: none; 
-            -webkit-user-select: none;
+        body, html {
+            margin: 0; padding: 0; overflow: hidden; width: 100%; height: 100%;
+            background-color: #000; font-family: 'Courier New', Courier, monospace;
+            user-select: none; -webkit-user-select: none;
         }
         #hud {
-            position: absolute; 
-            top: 15px; 
-            left: 15px;
-            color: #ff3333; 
-            font-size: 14px; 
-            text-shadow: 0 0 5px #000;
-            pointer-events: none; 
-            z-index: 10;
+            position: absolute; top: 15px; left: 15px;
+            color: #ff3333; font-size: 14px; text-shadow: 0 0 5px #000;
+            pointer-events: none; z-index: 10; display: none;
         }
         #crosshair {
-            position: absolute; 
-            top: 50%; 
-            left: 50%; 
-            width: 10px; 
-            height: 10px;
-            transform: translate(-50%, -50%); 
-            color: rgba(255, 255, 255, 0.5);
-            font-size: 20px; 
-            pointer-events: none; 
-            z-index: 10;
+            position: absolute; top: 50%; left: 50%; width: 10px; height: 10px;
+            transform: translate(-50%, -50%); color: rgba(255, 255, 255, 0.5);
+            font-size: 20px; pointer-events: none; z-index: 10; display: none;
         }
-        /* Horror Factory Animated Background Title Screen */
         #instructions {
-            position: absolute; 
-            width: 100%; 
-            height: 100%;
-            background: radial-gradient(circle, rgba(20,10,5,0.9) 0%, rgba(5,5,5,1) 100%),
+            position: absolute; width: 100%; height: 100%;
+            background: radial-gradient(circle, rgba(20,10,5,0.95) 0%, rgba(5,5,5,1) 100%),
                         linear-gradient(90deg, rgba(255,215,0,0.03) 1px, transparent 1px),
                         linear-gradient(rgba(255,215,0,0.03) 1px, transparent 1px);
             background-size: 100% 100%, 40px 40px, 40px 40px;
-            color: #fff;
-            display: flex; 
-            flex-direction: column; 
-            justify-content: center;
-            align-items: center; 
-            text-align: center; 
-            z-index: 999; 
+            color: #fff; display: flex; flex-direction: column; 
+            justify-content: center; align-items: center; text-align: center; z-index: 9999; 
         }
-        /* Factory Silhouettes decorative layout */
         .factory-sil {
-            position: absolute;
-            bottom: 0;
-            width: 100%;
-            height: 35vh;
+            position: absolute; bottom: 0; width: 100%; height: 35vh;
             background: repeating-linear-gradient(45deg, #111, #111 10px, #1a1a1a 10px, #1a1a1a 20px);
             clip-path: polygon(0% 100%, 0% 40%, 15% 15%, 25% 40%, 40% 10%, 55% 40%, 70% 20%, 85% 45%, 100% 15%, 100% 100%);
-            opacity: 0.4;
-            z-index: -1;
+            opacity: 0.4; z-index: -1;
         }
         #start-button {
-            padding: 16px 40px; 
-            font-size: 20px; 
-            font-family: 'Courier New', monospace; 
-            background: #ffd700; 
-            color: #000;
-            border: 2px solid #fff; 
-            cursor: pointer; 
-            border-radius: 8px; 
-            font-weight: bold;
-            box-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-        #start-button:active {
-            transform: scale(0.95);
-            box-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
+            padding: 18px 50px; font-size: 22px; font-family: 'Courier New', monospace; 
+            background: #ffd700; color: #000; border: 3px solid #fff; cursor: pointer; 
+            border-radius: 8px; font-weight: bold; box-shadow: 0 0 25px rgba(255, 215, 0, 0.5);
         }
         #joystick-container {
-            position: absolute; 
-            bottom: 40px; 
-            left: 40px; 
-            width: 100px; 
-            height: 100px;
-            background: rgba(255, 255, 255, 0.2); 
-            border-radius: 50%; 
-            display: none;
-            z-index: 15; 
-            touch-action: none;
+            position: absolute; bottom: 40px; left: 40px; width: 100px; height: 100px;
+            background: rgba(255, 255, 255, 0.2); border-radius: 50%; display: none;
+            z-index: 15; touch-action: none;
         }
         #joystick-knob {
-            position: absolute; 
-            top: 30px; 
-            left: 30px; 
-            width: 40px; 
-            height: 40px;
-            background: #ffd700; 
-            border-radius: 50%; 
-            box-shadow: 0 0 10px #ffd700;
+            position: absolute; top: 30px; left: 30px; width: 40px; height: 40px;
+            background: #ffd700; border-radius: 50%; box-shadow: 0 0 10px #ffd700;
         }
     </style>
     <script src="https://cloudflare.com"></script>
@@ -109,262 +56,173 @@
 
     <div id="instructions">
         <div class="factory-sil"></div>
-        <h1 style="color: #ffd700; font-size: 38px; margin: 0 0 5px 0; text-shadow: 0 0 10px rgba(255,215,0,0.5);">SUNNY STORYTIME</h1>
+        <h1 style="color: #ffd700; font-size: 38px; margin: 0 0 5px 0;">SUNNY STORYTIME</h1>
         <p style="font-size: 16px; margin: 0 0 5px 0; color: #aaa; letter-spacing: 2px;">CHAPTER 1: THE FIRST STORY</p>
         <p style="font-size: 14px; margin: 0 0 40px 0; color: #ff3333; font-weight: bold;">By Brothers Playtime</p>
-        
         <button id="start-button">START GAME</button>
-        
-        <p style="font-size: 11px; color: #777; margin-top: 40px; max-width: 450px; line-height: 1.5;">
-            PC: WASD + Mouse Look<br>
-            Mobile: Left Joystick + Swipe Screen to Look<br>
-            <span style="color: #ffd700;">Objective: Collect the Red & Blue Hands, then escape Sunny.</span>
-        </p>
     </div>
 
     <div id="hud">BROTHERS PLAYTIME | OBJECTIVE: FIND THE RED AND BLUE HANDS (RBHP)</div>
     <div id="crosshair">+</div>
-
-    <div id="joystick-container">
-        <div id="joystick-knob"></div>
-    </div>
+    <div id="joystick-container"><div id="joystick-knob"></div></div>
 
     <script>
-        // --- 3D Scene Setup ---
-        const scene = new THREE.Scene();
-        scene.fog = new THREE.FogExp2(0x020205, 0.12);
-
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        document.body.appendChild(renderer.domElement);
-
-        // --- Environment Setup ---
-        const floorGeo = THREE.PlaneGeometry(20, 100);
-        const floorMat = new THREE.MeshStandardMaterial({ color: 0x111115, roughness: 0.8 });
-        const floor = new THREE.Mesh(floorGeo, floorMat);
-        floor.rotation.x = -Math.PI / 2;
-        scene.add(floor);
-
-        const wallLeftGeo = THREE.PlaneGeometry(100, 12);
-        const wallMat = new THREE.MeshStandardMaterial({ color: 0x08080c, roughness: 0.9 });
-        const wallLeft = new THREE.Mesh(wallLeftGeo, wallMat);
-        wallLeft.position.set(-10, 6, 0); 
-        wallLeft.rotation.y = Math.PI / 2;
-        scene.add(wallLeft);
-
-        const wallRight = new THREE.Mesh(wallLeftGeo, wallMat);
-        wallRight.position.set(10, 6, 0); 
-        wallRight.rotation.y = -Math.PI / 2;
-        scene.add(wallRight);
-
-        // --- Items: The Red and Blue Hand Pack (RBHP) ---
-        let hasBlueHand = false;
-        let hasRedHand = false;
-        let isSunnyChasing = false;
-        let gameRunning = false;
-
-        const handGeo = THREE.BoxGeometry(1, 1, 0.2);
-        
-        const blueHandMat = new THREE.MeshStandardMaterial({ color: 0x0055ff, emissive: 0x002288 });
-        const blueHand = new THREE.Mesh(handGeo, blueHandMat);
-        blueHand.position.set(-4, 1.5, -10); 
-        scene.add(blueHand);
-
-        const redHandMat = new THREE.MeshStandardMaterial({ color: 0xff1133, emissive: 0x880011 });
-        const redHand = new THREE.Mesh(handGeo, redHandMat);
-        redHand.position.set(4, 1.5, -20); 
-        scene.add(redHand);
-
-        // --- Sunny (The Stalker) ---
-        const sunnyGeo = THREE.BoxGeometry(2, 6, 2);
-        const sunnyMat = new THREE.MeshBasicMaterial({ color: 0xffd700 });
-        const sunny = new THREE.Mesh(sunnyGeo, sunnyMat);
-        sunny.position.set(0, 3, -40); 
-        scene.add(sunny);
-
-        // --- Lights ---
-        const ambientLight = new THREE.AmbientLight(0x050510);
-        scene.add(ambientLight);
-
-        const flashlight = new THREE.SpotLight(0xffffff, 4, 35, Math.PI / 5, 0.5, 1);
-        flashlight.position.set(0, 2, 0);
-        scene.add(flashlight); 
-        scene.add(flashlight.target);
-
-        camera.position.set(0, 2, 25); 
-
-        // --- Control Mapping ---
+        let scene, camera, renderer, floor, wallLeft, wallRight, blueHand, redHand, sunny, ambientLight, flashlight;
+        let hasBlueHand = false, hasRedHand = false, isSunnyChasing = false, gameRunning = false;
         let moveForward = false, moveBackward = false, moveLeft = false, moveRight = false;
-        let mobileForward = 0, mobileRight = 0;
-        let speed = 0.12;
-        let sunnySpeed = 0.09;
-        let yaw = 0, pitch = 0;
+        let mobileForward = 0, mobileRight = 0, yaw = 0, pitch = 0;
+        const speed = 0.12, sunnySpeed = 0.09;
 
         const hud = document.getElementById('hud');
+        const crosshair = document.getElementById('crosshair');
         const instructions = document.getElementById('instructions');
         const startButton = document.getElementById('start-button');
         const joystickContainer = document.getElementById('joystick-container');
-
+        const knob = document.getElementById('joystick-knob');
         const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
 
-        // Direct, high-priority click handler to guarantee functionality
-        function launchGame() {
+        function init3D() {
+            scene = new THREE.Scene();
+            scene.fog = new THREE.FogExp2(0x020205, 0.12);
+
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
+
+            // Floor
+            floor = new THREE.Mesh(new THREE.PlaneGeometry(20, 100), new THREE.MeshStandardMaterial({ color: 0x111115, roughness: 0.8 }));
+            floor.rotation.x = -Math.PI / 2; scene.add(floor);
+
+            // Walls
+            let wallMat = new THREE.MeshStandardMaterial({ color: 0x08080c, roughness: 0.9 });
+            wallLeft = new THREE.Mesh(new THREE.PlaneGeometry(100, 12), wallMat);
+            wallLeft.position.set(-10, 6, 0); wallLeft.rotation.y = Math.PI / 2; scene.add(wallLeft);
+
+            wallRight = new THREE.Mesh(new THREE.PlaneGeometry(100, 12), wallMat);
+            wallRight.position.set(10, 6, 0); wallRight.rotation.y = -Math.PI / 2; scene.add(wallRight);
+
+            // Hands
+            blueHand = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 0.2), new THREE.MeshStandardMaterial({ color: 0x0055ff, emissive: 0x002288 }));
+            blueHand.position.set(-4, 1.5, -10); scene.add(blueHand);
+
+            redHand = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 0.2), new THREE.MeshStandardMaterial({ color: 0xff1133, emissive: 0x880011 }));
+            redHand.position.set(4, 1.5, -20); scene.add(redHand);
+
+            // Sunny
+            sunny = new THREE.Mesh(new THREE.BoxGeometry(2, 6, 2), new THREE.MeshBasicMaterial({ color: 0xffd700 }));
+            sunny.position.set(0, 3, -40); scene.add(sunny);
+
+            // Lighting
+            ambientLight = new THREE.AmbientLight(0x050510); scene.add(ambientLight);
+            flashlight = new THREE.SpotLight(0xffffff, 4, 35, Math.PI / 5, 0.5, 1);
+            flashlight.position.set(0, 2, 0); scene.add(flashlight); scene.add(flashlight.target);
+
+            camera.position.set(0, 2, 25);
+        }
+
+        function startGame() {
+            if (gameRunning) return;
+            init3D();
             gameRunning = true;
-            instructions.style.setProperty('display', 'none', 'important');
+            instructions.style.display = 'none';
+            hud.style.display = 'block';
+            crosshair.style.display = 'block';
             
             if (isMobile) {
                 joystickContainer.style.display = 'block';
             } else {
                 document.body.requestPointerLock();
             }
+            animate();
         }
 
-        startButton.addEventListener('click', launchGame);
-        startButton.addEventListener('touchend', (e) => {
-            e.preventDefault();
-            launchGame();
-        });
+        startButton.addEventListener('click', startGame);
+        startButton.addEventListener('touchstart', (e) => { e.preventDefault(); startGame(); });
 
-        // Desktop Mouse Config
+        // Controls Logic
         document.addEventListener('mousemove', (e) => {
             if (!gameRunning || isMobile || document.pointerLockElement !== document.body) return;
-            yaw -= e.movementX * 0.002; 
-            pitch -= e.movementY * 0.002;
+            yaw -= e.movementX * 0.002; pitch -= e.movementY * 0.002;
             pitch = Math.max(-Math.PI/2.5, Math.min(Math.PI/2.5, pitch));
             camera.quaternion.setFromEuler(new THREE.Euler(pitch, yaw, 0, 'YXZ'));
         });
 
-        // Mobile Drag Config
         let lastTouchX = 0, lastTouchY = 0;
         document.addEventListener('touchstart', (e) => {
             if(!gameRunning || e.target.closest('#joystick-container')) return;
-            lastTouchX = e.touches[0].clientX; 
-            lastTouchY = e.touches[0].clientY;
+            lastTouchX = e.touches.clientX; lastTouchY = e.touches.clientY;
         }, {passive: true});
 
         document.addEventListener('touchmove', (e) => {
             if(!gameRunning || e.target.closest('#joystick-container')) return;
-            const touchX = e.touches[0].clientX; 
-            const touchY = e.touches[0].clientY;
-            yaw -= (touchX - lastTouchX) * 0.005; 
-            pitch -= (touchY - lastTouchY) * 0.005;
+            yaw -= (e.touches[0].clientX - lastTouchX) * 0.005;
+            pitch -= (e.touches[0].clientY - lastTouchY) * 0.005;
             pitch = Math.max(-Math.PI/2.5, Math.min(Math.PI/2.5, pitch));
             camera.quaternion.setFromEuler(new THREE.Euler(pitch, yaw, 0, 'YXZ'));
-            lastTouchX = touchX; 
-            lastTouchY = touchY;
+            lastTouchX = e.touches[0].clientX; lastTouchY = e.touches[0].clientY;
         }, {passive: true});
-// Joystick Movement Loop
-const knob = document.getElementById('joystick-knob');
-let joystickActive = false;
-joystickContainer.addEventListener('touchstart', () => { joystickActive = true; }, {passive: true});
-window.addEventListener('touchmove', (e) => {
-if (!gameRunning || !joystickActive) return;
-const touch = Array.from(e.touches).find(t => t.target.closest('#joystick-container'));
-if (!touch) return;
-const rect = joystickContainer.getBoundingClientRect();
-const centerX = rect.left + rect.width / 2;
-const centerY = rect.top + rect.height / 2;
-let deltaX = touch.clientX - centerX;
-let deltaY = touch.clientY - centerY;
-const distance = Math.min(40, Math.sqrt(deltaXdeltaX + deltaYdeltaY));
-const angle = Math.atan2(deltaY, deltaX);
-const knobX = Math.cos(angle) * distance;
-const knobY = Math.sin(angle) * distance;
-knob.style.transform = translate(${knobX}px, ${knobY}px);
-mobileRight = knobX / 40;
-mobileForward = -knobY / 40;
-}, {passive: true});
-window.addEventListener('touchend', () => {
-joystickActive = false;
-knob.style.transform = 'translate(0px, 0px)';
-mobileForward = 0;
-mobileRight = 0;
-});
-// Key Mappings
-window.addEventListener('keydown', (e) => {
-if (!gameRunning) return;
-if (e.key === 'w' || e.key === 'ArrowUp') moveForward = true;
-if (e.key === 's' || e.key === 'ArrowDown') moveBackward = true;
-if (e.key === 'a' || e.key === 'ArrowLeft') moveLeft = true;
-if (e.key === 'd' || e.key === 'ArrowRight') moveRight = true;
-});
+
+        let joystickActive = false;
+        joystickContainer.addEventListener('touchstart', () => { joystickActive = true; }, {passive: true});
+        window.addEventListener('touchmove', (e) => {
+            if (!gameRunning || !joystickActive) return;
+            const touch = Array.from(e.touches).find(t => t.target.closest('#joystick-container'));
+            if (!touch) return;
+            const rect = joystickContainer.getBoundingClientRect();
+            let deltaX = touch.clientX - (rect.left + rect.width / 2), deltaY = touch.clientY - (rect.top + rect.height / 2);
+            const dist = Math.min(40, Math.sqrt(deltaX*deltaX + deltaY*deltaY)), angle = Math.atan2(deltaY, deltaX);
+            knob.style.transform = `translate(${Math.cos(angle)*dist}px, ${Math.sin(angle)*dist}px)`;
+            mobileRight = (Math.cos(angle)*dist) / 40; mobileForward = -(Math.sin(angle)*dist) / 40;
+        }, {passive: true});
+        window.addEventListener('touchend', () => { joystickActive = false; knob.style.transform = 'translate(0px,0px)'; mobileForward = 0; mobileRight = 0; });
+
+        window.addEventListener('keydown', (e) => {
+            if (!gameRunning) return;
+            if (e.key === 'w' || e.key === 'ArrowUp') moveForward = true;
+            if (e.key === 's' || e.key === 'ArrowDown') moveBackward = true;
+            if (e.key === 'a' || e.key === 'ArrowLeft') moveLeft = true;
+            if (e.key === 'd' || e.key === 'ArrowRight') moveRight = true;
+        });
 window.addEventListener('keyup', (e) => {
 if (e.key === 'w' || e.key === 'ArrowUp') moveForward = false;
 if (e.key === 's' || e.key === 'ArrowDown') moveBackward = false;
 if (e.key === 'a' || e.key === 'ArrowLeft') moveLeft = false;
 if (e.key === 'd' || e.key === 'ArrowRight') moveRight = false;
 });
-// --- Core Gameplay Engine ---
 function animate() {
+if (!gameRunning) return;
 requestAnimationFrame(animate);
-if (gameRunning) {
-const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
-forward.y = 0;
-forward.normalize();
-const right = new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion);
-right.y = 0;
-right.normalize();
+const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion); forward.y = 0; forward.normalize();
+const right = new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion); right.y = 0; right.normalize();
 if (moveForward) camera.position.addScaledVector(forward, speed);
 if (moveBackward) camera.position.addScaledVector(forward, -speed);
 if (moveLeft) camera.position.addScaledVector(right, -speed);
 if (moveRight) camera.position.addScaledVector(right, speed);
-if (isMobile) {
-camera.position.addScaledVector(forward, mobileForward * speed);
-camera.position.addScaledVector(right, mobileRight * speed);
-}
+if (isMobile) { camera.position.addScaledVector(forward, mobileForward * speed); camera.position.addScaledVector(right, mobileRight * speed); }
 camera.position.x = Math.max(-9, Math.min(9, camera.position.x));
 camera.position.z = Math.max(-45, Math.min(45, camera.position.z));
 flashlight.position.copy(camera.position);
-const targetPos = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion).add(camera.position);
+let targetPos = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion).add(camera.position);
 flashlight.target.position.copy(targetPos);
-// Item Logic Systems
-if (!hasBlueHand) {
-blueHand.rotation.y += 0.02;
-if (camera.position.distanceTo(blueHand.position) < 2) {
-hasBlueHand = true;
-scene.remove(blueHand);
-hud.innerText = hasRedHand ? "RBHP ASSEMBLED! RUN BACK TO THE START ENTRANCE!" : "COLLECTED BLUE HAND. FIND THE RED HAND!";
-}
-}
-if (!hasRedHand) {
-redHand.rotation.y += 0.02;
-if (camera.position.distanceTo(redHand.position) < 2) {
-hasRedHand = true;
-scene.remove(redHand);
-hud.innerText = hasBlueHand ? "RBHP ASSEMBLED! RUN BACK TO THE START ENTRANCE!" : "COLLECTED RED HAND. FIND THE BLUE HAND!";
-}
-}
-// Stalker Hunt Trigger
+if (!hasBlueHand) { blueHand.rotation.y += 0.02; if (camera.position.distanceTo(blueHand.position) < 2) { hasBlueHand = true; scene.remove(blueHand); hud.innerText = hasRedHand ? "RBHP ASSEMBLED! RUN BACK TO THE START ENTRANCE!" : "COLLECTED BLUE HAND. FIND THE RED HAND!"; } }
+if (!hasRedHand) { redHand.rotation.y += 0.02; if (camera.position.distanceTo(redHand.position) < 2) { hasRedHand = true; scene.remove(redHand); hud.innerText = hasBlueHand ? "RBHP ASSEMBLED! RUN BACK TO THE START ENTRANCE!" : "COLLECTED RED HAND. FIND THE BLUE HAND!"; } }
 if (hasBlueHand && hasRedHand) {
-if (!isSunnyChasing) {
-isSunnyChasing = true;
-flashlight.color.setHex(0xff0000);
-}
-const chaseDirection = new THREE.Vector3().subVectors(camera.position, sunny.position);
-chaseDirection.y = 0;
-chaseDirection.normalize();
-sunny.position.addScaledVector(chaseDirection, sunnySpeed);
-sunny.position.y = 3 + Math.sin(Date.now() * 0.02) * 0.4;
-// Collision State Engine
+if (!isSunnyChasing) { isSunnyChasing = true; flashlight.color.setHex(0xff0000); }
+let chase = new THREE.Vector3().subVectors(camera.position, sunny.position); chase.y = 0; chase.normalize();
+sunny.position.addScaledVector(chase, sunnySpeed); sunny.position.y = 3 + Math.sin(Date.now() * 0.02) * 0.4;
 if (camera.position.distanceTo(sunny.position) < 2.2) {
-hud.innerText = "SUNNY CAUGHT YOU! REFRESH TO TRY AGAIN.";
-speed = 0;
-sunnySpeed = 0;
-flashlight.position.set(sunny.position.x, sunny.position.y + 1, sunny.position.z + 1);
+hud.innerText = "SUNNY CAUGHT YOU! REFRESH TO TRY AGAIN."; speed = 0; sunnySpeed = 0;
 } else if (camera.position.z > 22) {
-hud.innerText = "YOU ESCAPED CHAPTER 1! BROTHERS PLAYTIME VICTORIOUS.";
-sunnySpeed = 0;
+hud.innerText = "YOU ESCAPED CHAPTER 1! BROTHERS PLAYTIME VICTORIOUS."; sunnySpeed = 0;
 }
 } else {
 sunny.position.y = 3 + Math.sin(Date.now() * 0.003) * 0.1;
 }
-}
 renderer.render(scene, camera);
 }
-animate();
 window.addEventListener('resize', () => {
-camera.aspect = window.innerWidth / window.innerHeight;
-camera.updateProjectionMatrix();
+if (!gameRunning) return;
+camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix();
 renderer.setSize(window.innerWidth, window.innerHeight);
 });
