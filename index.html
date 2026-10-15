@@ -35,19 +35,50 @@
             pointer-events: none; 
             z-index: 10;
         }
+        /* Horror Factory Animated Background Title Screen */
         #instructions {
             position: absolute; 
             width: 100%; 
             height: 100%;
-            background: rgba(0,0,0,0.9); 
+            background: radial-gradient(circle, rgba(20,10,5,0.9) 0%, rgba(5,5,5,1) 100%),
+                        linear-gradient(90deg, rgba(255,215,0,0.03) 1px, transparent 1px),
+                        linear-gradient(rgba(255,215,0,0.03) 1px, transparent 1px);
+            background-size: 100% 100%, 40px 40px, 40px 40px;
             color: #fff;
             display: flex; 
             flex-direction: column; 
             justify-content: center;
             align-items: center; 
             text-align: center; 
-            z-index: 20; 
-            cursor: pointer;
+            z-index: 999; 
+        }
+        /* Factory Silhouettes decorative layout */
+        .factory-sil {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 35vh;
+            background: repeating-linear-gradient(45deg, #111, #111 10px, #1a1a1a 10px, #1a1a1a 20px);
+            clip-path: polygon(0% 100%, 0% 40%, 15% 15%, 25% 40%, 40% 10%, 55% 40%, 70% 20%, 85% 45%, 100% 15%, 100% 100%);
+            opacity: 0.4;
+            z-index: -1;
+        }
+        #start-button {
+            padding: 16px 40px; 
+            font-size: 20px; 
+            font-family: 'Courier New', monospace; 
+            background: #ffd700; 
+            color: #000;
+            border: 2px solid #fff; 
+            cursor: pointer; 
+            border-radius: 8px; 
+            font-weight: bold;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        #start-button:active {
+            transform: scale(0.95);
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
         }
         #joystick-container {
             position: absolute; 
@@ -77,10 +108,18 @@
 <body>
 
     <div id="instructions">
-        <h1 style="color: #ffd700; font-size: 32px; margin: 0 0 10px 0;">SUNNY STORYTIME: CHAPTER 1</h1>
-        <p style="font-size: 16px; margin: 0 0 30px 0;">By Brothers Playtime</p>
-        <button id="start-button" style="padding: 12px 30px; font-size: 18px; font-family: monospace; background: #ffd700; border: none; cursor: pointer; border-radius: 5px; font-weight: bold;">START GAME</button>
-        <p style="font-size: 12px; color: #aaa; margin-top: 20px;">Find the Blue and Red Hands to assemble your RBHP. Watch out for Sunny.</p>
+        <div class="factory-sil"></div>
+        <h1 style="color: #ffd700; font-size: 38px; margin: 0 0 5px 0; text-shadow: 0 0 10px rgba(255,215,0,0.5);">SUNNY STORYTIME</h1>
+        <p style="font-size: 16px; margin: 0 0 5px 0; color: #aaa; letter-spacing: 2px;">CHAPTER 1: THE FIRST STORY</p>
+        <p style="font-size: 14px; margin: 0 0 40px 0; color: #ff3333; font-weight: bold;">By Brothers Playtime</p>
+        
+        <button id="start-button">START GAME</button>
+        
+        <p style="font-size: 11px; color: #777; margin-top: 40px; max-width: 450px; line-height: 1.5;">
+            PC: WASD + Mouse Look<br>
+            Mobile: Left Joystick + Swipe Screen to Look<br>
+            <span style="color: #ffd700;">Objective: Collect the Red & Blue Hands, then escape Sunny.</span>
+        </p>
     </div>
 
     <div id="hud">BROTHERS PLAYTIME | OBJECTIVE: FIND THE RED AND BLUE HANDS (RBHP)</div>
@@ -123,6 +162,7 @@
         let hasBlueHand = false;
         let hasRedHand = false;
         let isSunnyChasing = false;
+        let gameRunning = false;
 
         const handGeo = THREE.BoxGeometry(1, 1, 0.2);
         
@@ -167,17 +207,28 @@
         const joystickContainer = document.getElementById('joystick-container');
 
         const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
-        if (isMobile) joystickContainer.style.display = 'block';
 
-        startButton.addEventListener('click', (e) => {
-            e.stopPropagation(); 
-            instructions.style.display = 'none';
-            if (!isMobile) document.body.requestPointerLock();
+        // Direct, high-priority click handler to guarantee functionality
+        function launchGame() {
+            gameRunning = true;
+            instructions.style.setProperty('display', 'none', 'important');
+            
+            if (isMobile) {
+                joystickContainer.style.display = 'block';
+            } else {
+                document.body.requestPointerLock();
+            }
+        }
+
+        startButton.addEventListener('click', launchGame);
+        startButton.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            launchGame();
         });
 
         // Desktop Mouse Config
         document.addEventListener('mousemove', (e) => {
-            if (isMobile || document.pointerLockElement !== document.body) return;
+            if (!gameRunning || isMobile || document.pointerLockElement !== document.body) return;
             yaw -= e.movementX * 0.002; 
             pitch -= e.movementY * 0.002;
             pitch = Math.max(-Math.PI/2.5, Math.min(Math.PI/2.5, pitch));
@@ -187,15 +238,15 @@
         // Mobile Drag Config
         let lastTouchX = 0, lastTouchY = 0;
         document.addEventListener('touchstart', (e) => {
-            if(e.target.closest('#joystick-container')) return;
-            lastTouchX = e.touches.clientX; 
-            lastTouchY = e.touches.clientY;
+            if(!gameRunning || e.target.closest('#joystick-container')) return;
+            lastTouchX = e.touches[0].clientX; 
+            lastTouchY = e.touches[0].clientY;
         }, {passive: true});
 
         document.addEventListener('touchmove', (e) => {
-            if(e.target.closest('#joystick-container')) return;
-            const touchX = e.touches.clientX; 
-            const touchY = e.touches.clientY;
+            if(!gameRunning || e.target.closest('#joystick-container')) return;
+            const touchX = e.touches[0].clientX; 
+            const touchY = e.touches[0].clientY;
             yaw -= (touchX - lastTouchX) * 0.005; 
             pitch -= (touchY - lastTouchY) * 0.005;
             pitch = Math.max(-Math.PI/2.5, Math.min(Math.PI/2.5, pitch));
@@ -203,53 +254,51 @@
             lastTouchX = touchX; 
             lastTouchY = touchY;
         }, {passive: true});
-
-        // Joystick Movement Loop
-        const knob = document.getElementById('joystick-knob');
-        let joystickActive = false;
-        joystickContainer.addEventListener('touchstart', () => { joystickActive = true; }, {passive: true});
-
-        window.addEventListener('touchmove', (e) => {
-            if (!joystickActive) return;
-            const touch = Array.from(e.touches).find(t => t.target.closest('#joystick-container'));
-            if (!touch) return;
-            const rect = joystickContainer.getBoundingClientRect();
-            const centerX = rect.left + rect.width / 2; 
-            const centerY = rect.top + rect.height / 2;
-            let deltaX = touch.clientX - centerX; 
-            let deltaY = touch.clientY - centerY;
-            const distance = Math.min(40, Math.sqrt(deltaX*deltaX + deltaY*deltaY));
-            const angle = Math.atan2(deltaY, deltaX);
-            const knobX = Math.cos(angle) * distance; 
-            const knobY = Math.sin(angle) * distance;
-            knob.style.transform = `translate(${knobX}px, ${knobY}px)`;
-            mobileRight = knobX / 40; 
-            mobileForward = -knobY / 40;
-        }, {passive: true});
-
-        window.addEventListener('touchend', () => {
-            joystickActive = false; 
-            knob.style.transform = 'translate(0px, 0px)';
-            mobileForward = 0; 
-            mobileRight = 0;
-        });
-
-        // Key Mappings
-        window.addEventListener('keydown', (e) => {
-            if (e.key === 'w' || e.key === 'ArrowUp') moveForward = true;
-            if (e.key === 's' || e.key === 'ArrowDown') moveBackward = true;
-            if (e.key === 'a' || e.key === 'ArrowLeft') moveLeft = true;
-            if (e.key === 'd' || e.key === 'ArrowRight') moveRight = true;
-        });
-        window.addEventListener('keyup', (e) => {
-            if (e.key === 'w' || e.key === 'ArrowUp') moveForward = false;
-            if (e.key === 's' || e.key === 'ArrowDown') moveBackward = false;
-            if (e.key === 'a' || e.key === 'ArrowLeft') moveLeft = false;
+// Joystick Movement Loop
+const knob = document.getElementById('joystick-knob');
+let joystickActive = false;
+joystickContainer.addEventListener('touchstart', () => { joystickActive = true; }, {passive: true});
+window.addEventListener('touchmove', (e) => {
+if (!gameRunning || !joystickActive) return;
+const touch = Array.from(e.touches).find(t => t.target.closest('#joystick-container'));
+if (!touch) return;
+const rect = joystickContainer.getBoundingClientRect();
+const centerX = rect.left + rect.width / 2;
+const centerY = rect.top + rect.height / 2;
+let deltaX = touch.clientX - centerX;
+let deltaY = touch.clientY - centerY;
+const distance = Math.min(40, Math.sqrt(deltaXdeltaX + deltaYdeltaY));
+const angle = Math.atan2(deltaY, deltaX);
+const knobX = Math.cos(angle) * distance;
+const knobY = Math.sin(angle) * distance;
+knob.style.transform = translate(${knobX}px, ${knobY}px);
+mobileRight = knobX / 40;
+mobileForward = -knobY / 40;
+}, {passive: true});
+window.addEventListener('touchend', () => {
+joystickActive = false;
+knob.style.transform = 'translate(0px, 0px)';
+mobileForward = 0;
+mobileRight = 0;
+});
+// Key Mappings
+window.addEventListener('keydown', (e) => {
+if (!gameRunning) return;
+if (e.key === 'w' || e.key === 'ArrowUp') moveForward = true;
+if (e.key === 's' || e.key === 'ArrowDown') moveBackward = true;
+if (e.key === 'a' || e.key === 'ArrowLeft') moveLeft = true;
+if (e.key === 'd' || e.key === 'ArrowRight') moveRight = true;
+});
+window.addEventListener('keyup', (e) => {
+if (e.key === 'w' || e.key === 'ArrowUp') moveForward = false;
+if (e.key === 's' || e.key === 'ArrowDown') moveBackward = false;
+if (e.key === 'a' || e.key === 'ArrowLeft') moveLeft = false;
 if (e.key === 'd' || e.key === 'ArrowRight') moveRight = false;
 });
 // --- Core Gameplay Engine ---
 function animate() {
 requestAnimationFrame(animate);
+if (gameRunning) {
 const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
 forward.y = 0;
 forward.normalize();
@@ -309,6 +358,7 @@ sunnySpeed = 0;
 }
 } else {
 sunny.position.y = 3 + Math.sin(Date.now() * 0.003) * 0.1;
+}
 }
 renderer.render(scene, camera);
 }
