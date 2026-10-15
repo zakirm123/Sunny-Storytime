@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Sunny Storytime 3D - Brothers Playtime</title>
     <style>
         body {
@@ -9,13 +10,15 @@
             overflow: hidden;
             background-color: #000;
             font-family: 'Courier New', Courier, monospace;
+            user-select: none;
+            -webkit-user-select: none;
         }
         #hud {
             position: absolute;
-            top: 20px;
-            left: 20px;
+            top: 15px;
+            left: 15px;
             color: #ff3333;
-            font-size: 18px;
+            font-size: 14px;
             text-shadow: 0 0 5px #000;
             pointer-events: none;
             z-index: 10;
@@ -31,13 +34,12 @@
             font-size: 20px;
             pointer-events: none;
             z-index: 10;
-            user-select: none;
         }
         #instructions {
             position: absolute;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.85);
+            background: rgba(0,0,0,0.9);
             color: #fff;
             display: flex;
             flex-direction: column;
@@ -47,41 +49,66 @@
             z-index: 20;
             cursor: pointer;
         }
+        /* Mobile Joystick Styles */
+        #joystick-container {
+            position: absolute;
+            bottom: 40px;
+            left: 40px;
+            width: 100px;
+            height: 100px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: none; /* Hidden on desktop */
+            z-index: 15;
+            touch-action: none;
+        }
+        #joystick-knob {
+            position: absolute;
+            top: 30px;
+            left: 30px;
+            width: 40px;
+            height: 40px;
+            background: #ffd700;
+            border-radius: 50%;
+            box-shadow: 0 0 10px #ffd700;
+        }
     </style>
-    <!-- Load Three.js library -->
     <script src="https://cloudflare.com"></script>
 </head>
 <body>
 
     <div id="instructions">
-        <h1 style="color: #ffd700; font-size: 40px;">SUNNY STORYTIME</h1>
-        <p style="font-size: 18px;">By Brothers Playtime</p>
-        <p style="margin-top: 40px; color: #aaa;">CLICK TO PLAY</p>
-        <p style="font-size: 14px; color: #666;">(WASD to Move | Mouse to Look Around)</p>
+        <h1 style="color: #ffd700; font-size: 32px; margin: 0 0 10px 0;">SUNNY STORYTIME</h1>
+        <p style="font-size: 16px; margin: 0 0 30px 0;">By Brothers Playtime</p>
+        <button id="start-button" style="padding: 12px 30px; font-size: 18px; font-family: monospace; background: #ffd700; border: none; cursor: pointer; border-radius: 5px; font-weight: bold;">CLICK TO PLAY</button>
+        <p style="font-size: 12px; color: #aaa; margin-top: 20px;">PC: WASD + Mouse | Mobile: Left Joystick + Swipe Screen</p>
     </div>
 
-    <div id="hud">BROTHERS PLAYTIME | OBJECTIVE: ESCAPE THE TOY FACTORY</div>
+    <div id="hud">BROTHERS PLAYTIME | OBJECTIVE: ESCAPE SUNNY</div>
     <div id="crosshair">+</div>
+
+    <!-- Touch Joystick for Mobile -->
+    <div id="joystick-container">
+        <div id="joystick-knob"></div>
+    </div>
 
     <script>
         // --- 3D Scene Setup ---
         const scene = new THREE.Scene();
-        scene.fog = new THREE.FogExp2(0x05050a, 0.15); // Eerie fog
+        scene.fog = new THREE.FogExp2(0x05050a, 0.15);
 
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
 
-        // --- Create the Room / Environment ---
-        // Floor
+        // --- Environment setup ---
         const floorGeo = THREE.PlaneGeometry(20, 100);
         const floorMat = new THREE.MeshStandardMaterial({ color: 0x111115, roughness: 0.8 });
         const floor = new THREE.Mesh(floorGeo, floorMat);
         floor.rotation.x = -Math.PI / 2;
         scene.add(floor);
 
-        // Left Wall
         const wallLeftGeo = THREE.PlaneGeometry(100, 10);
         const wallMat = new THREE.MeshStandardMaterial({ color: 0x0a0a0f, roughness: 0.9 });
         const wallLeft = new THREE.Mesh(wallLeftGeo, wallMat);
@@ -89,74 +116,131 @@
         wallLeft.rotation.y = Math.PI / 2;
         scene.add(wallLeft);
 
-        // Right Wall
         const wallRight = new THREE.Mesh(wallLeftGeo, wallMat);
         wallRight.position.set(10, 5, 0);
         wallRight.rotation.y = -Math.PI / 2;
         scene.add(wallRight);
 
-        // --- Create Sunny (The Monster Placeholder) ---
+        // Sunny Placeholder
         const sunnyGeo = THREE.BoxGeometry(2, 5, 2);
-        const sunnyMat = new THREE.MeshBasicMaterial({ color: 0xffd700 }); // Glowing gold
+        const sunnyMat = new THREE.MeshBasicMaterial({ color: 0xffd700 });
         const sunny = new THREE.Mesh(sunnyGeo, sunnyMat);
-        sunny.position.set(0, 2.5, -30); // Placed down the hallway
+        sunny.position.set(0, 2.5, -30);
         scene.add(sunny);
 
-        // --- Lighting ---
-        // Ambient light (very dim so it's scary)
+        // Lights
         const ambientLight = new THREE.AmbientLight(0x0a0a1a);
         scene.add(ambientLight);
 
-        // Player Flashlight
         const flashlight = new THREE.SpotLight(0xffffff, 3, 40, Math.PI / 6, 0.5, 1);
         flashlight.position.set(0, 2, 0);
         scene.add(flashlight);
         scene.add(flashlight.target);
 
-        // --- Player Controls & Movement ---
-        camera.position.set(0, 2, 10); // Start position
-        
-        let moveForward = false, moveBackward = false, moveLeft = false, moveRight = false;
-        const speed = 0.15;
+        camera.position.set(0, 2, 10);
 
-        // Mouse Look Logic
-        let yaw = 0;
-        let pitch = 0;
+        // --- Controls Handling ---
+        let moveForward = false, moveBackward = false, moveLeft = false, moveRight = false;
+        let mobileForward = 0, mobileRight = 0; // For mobile math
+        const speed = 0.15;
+        let yaw = 0, pitch = 0;
 
         const instructions = document.getElementById('instructions');
-        
-        instructions.addEventListener('click', () => {
-            instructions.requestPointerLock();
-        });
+        const startButton = document.getElementById('start-button');
+        const joystickContainer = document.getElementById('joystick-container');
 
-        document.addEventListener('pointerlockchange', () => {
-            if (document.pointerLockElement === instructions) {
-                instructions.style.display = 'none';
-            } else {
-                instructions.style.display = 'flex';
+        // Check if device is mobile/tablet
+        const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
+        if (isMobile) {
+            joystickContainer.style.display = 'block';
+        }
+
+        // Start Game Action
+        startButton.addEventListener('click', (e) => {
+            e.stopPropagation();
+            instructions.style.display = 'none';
+            if (!isMobile) {
+                document.body.requestPointerLock();
             }
         });
 
+        // Desktop Mouse Look
         document.addEventListener('mousemove', (e) => {
-            if (document.pointerLockElement !== instructions) return;
-            
+            if (isMobile || document.pointerLockElement !== document.body) return;
             yaw -= e.movementX * 0.002;
             pitch -= e.movementY * 0.002;
-            
-            // Limit looking too far up or down
             pitch = Math.max(-Math.PI/2.5, Math.min(Math.PI/2.5, pitch));
-            
             camera.quaternion.setFromEuler(new THREE.Euler(pitch, yaw, 0, 'YXZ'));
         });
 
-        // Keyboard Movement Listeners
+        // Mobile Touch Look (Swipe anywhere on screen)
+        let lastTouchX = 0, lastTouchY = 0;
+        document.addEventListener('touchstart', (e) => {
+            if(e.target.closest('#joystick-container')) return; // Ignore joystick touches
+            lastTouchX = e.touches[0].clientX;
+            lastTouchY = e.touches[0].clientY;
+        }, {passive: true});
+
+        document.addEventListener('touchmove', (e) => {
+            if(e.target.closest('#joystick-container')) return;
+            const touchX = e.touches[0].clientX;
+            const touchY = e.touches[0].clientY;
+            
+            yaw -= (touchX - lastTouchX) * 0.005;
+            pitch -= (touchY - lastTouchY) * 0.005;
+            pitch = Math.max(-Math.PI/2.5, Math.min(Math.PI/2.5, pitch));
+            camera.quaternion.setFromEuler(new THREE.Euler(pitch, yaw, 0, 'YXZ'));
+            
+            lastTouchX = touchX;
+            lastTouchY = touchY;
+        }, {passive: true});
+
+        // Mobile Joystick Core Logic
+        const knob = document.getElementById('joystick-knob');
+        let joystickActive = false;
+
+        joystickContainer.addEventListener('touchstart', (e) => {
+            joystickActive = true;
+        }, {passive: true});
+
+        window.addEventListener('touchmove', (e) => {
+            if (!joystickActive) return;
+            const touch = Array.from(e.touches).find(t => t.target.closest('#joystick-container'));
+            if (!touch) return;
+
+            const rect = joystickContainer.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+            
+            let deltaX = touch.clientX - centerX;
+            let deltaY = touch.clientY - centerY;
+            const distance = Math.min(40, Math.sqrt(deltaX*deltaX + deltaY*deltaY));
+            
+            const angle = Math.atan2(deltaY, deltaX);
+            const knobX = Math.cos(angle) * distance;
+            const knobY = Math.sin(angle) * distance;
+
+            knob.style.transform = `translate(${knobX}px, ${knobY}px)`;
+
+            // Convert joystick pull to movement values (-1 to 1)
+            mobileRight = knobX / 40;
+            mobileForward = -knobY / 40;
+        }, {passive: true});
+
+        window.addEventListener('touchend', () => {
+            joystickActive = false;
+            knob.style.transform = 'translate(0px, 0px)';
+            mobileForward = 0;
+            mobileRight = 0;
+        });
+
+        // Desktop Keyboard Inputs
         window.addEventListener('keydown', (e) => {
             if (e.key === 'w' || e.key === 'ArrowUp') moveForward = true;
             if (e.key === 's' || e.key === 'ArrowDown') moveBackward = true;
             if (e.key === 'a' || e.key === 'ArrowLeft') moveLeft = true;
             if (e.key === 'd' || e.key === 'ArrowRight') moveRight = true;
         });
-
         window.addEventListener('keyup', (e) => {
             if (e.key === 'w' || e.key === 'ArrowUp') moveForward = false;
             if (e.key === 's' || e.key === 'ArrowDown') moveBackward = false;
@@ -164,48 +248,38 @@
             if (e.key === 'd' || e.key === 'ArrowRight') moveRight = false;
         });
 
-        // --- Main 3D Game Loop ---
+        // --- Game Update Loop ---
         function animate() {
             requestAnimationFrame(animate);
 
-            // Calculate direction vectors based on where the player is looking
             const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
-            forward.y = 0; // Don't fly up or sink down
-            forward.normalize();
+            forward.y = 0; forward.normalize();
 
             const right = new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion);
-            right.y = 0;
-            right.normalize();
-
-            // Apply movement
-            if (moveForward) camera.position.addScaledVector(forward, speed);
-            if (moveBackward) camera.position.addScaledVector(forward, -speed);
-            if (moveLeft) camera.position.addScaledVector(right, -speed);
-            if (moveRight) camera.position.addScaledVector(right, speed);
-
-            // Lock camera inside hallway boundaries
-            camera.position.x = Math.max(-9, Math.min(9, camera.position.x));
-            camera.position.z = Math.max(-45, Math.min(45, camera.position.z));
-
-            // Attach flashlight to the camera position and direction
-            flashlight.position.copy(camera.position);
-            const targetPosition = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion).add(camera.position);
-            flashlight.target.position.copy(targetPosition);
-
-            // Slowly animate Sunny floating slightly up and down to look creepy
-            sunny.position.y = 2.5 + Math.sin(Date.now() * 0.003) * 0.2;
-
-            renderer.render(scene, camera);
-        }
-
-        animate();
-
-        // Handle window resizing
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        });
-    </script>
-</body>
-</html>
+            right.y = 0; right.normalize();
+// Keyboard movement
+if (moveForward) camera.position.addScaledVector(forward, speed);
+if (moveBackward) camera.position.addScaledVector(forward, -speed);
+if (moveLeft) camera.position.addScaledVector(right, -speed);
+if (moveRight) camera.position.addScaledVector(right, speed);
+// Mobile joystick movement
+if (isMobile) {
+camera.position.addScaledVector(forward, mobileForward * speed);
+camera.position.addScaledVector(right, mobileRight * speed);
+}
+// Wall Collisions
+camera.position.x = Math.max(-9, Math.min(9, camera.position.x));
+camera.position.z = Math.max(-45, Math.min(45, camera.position.z));
+// Sync Flashlight
+flashlight.position.copy(camera.position);
+const targetPos = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion).add(camera.position);
+flashlight.target.position.copy(targetPos);
+sunny.position.y = 2.5 + Math.sin(Date.now() * 0.003) * 0.2;
+renderer.render(scene, camera);
+}
+animate();
+window.addEventListener('resize', () => {
+camera.aspect = window.innerWidth / window.innerHeight;
+camera.updateProjectionMatrix();
+renderer.setSize(window.innerWidth, window.innerHeight);
+});
