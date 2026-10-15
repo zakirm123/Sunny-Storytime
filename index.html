@@ -2,103 +2,210 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Sunny Storytime by Brothers Playtime</title>
+    <title>Sunny Storytime 3D - Brothers Playtime</title>
     <style>
         body {
             margin: 0;
-            background-color: #050505;
-            color: #fff;
+            overflow: hidden;
+            background-color: #000;
             font-family: 'Courier New', Courier, monospace;
-            overflow: hidden;
         }
-        #game-container {
-            position: relative;
-            width: 800px;
-            height: 600px;
-            margin: 50px auto;
-            border: 4px solid #333;
-            background: radial-gradient(circle, #1a1a2e 0%, #0f0f1a 100%);
-            overflow: hidden;
-        }
-        #player {
+        #hud {
             position: absolute;
-            width: 40px;
-            height: 40px;
-            background-color: #00bcd4;
-            border-radius: 5px;
-            top: 500px;
-            left: 380px;
-            box-shadow: 0 0 15px #00bcd4;
-        }
-        #sunny {
-            position: absolute;
-            width: 60px;
-            height: 60px;
-            background-color: #ffd700;
-            border-radius: 50%;
-            top: 50px;
-            left: 370px;
-            box-shadow: 0 0 20px #ffd700;
-        }
-        .hud {
-            position: absolute;
-            top: 10px;
-            left: 10px;
+            top: 20px;
+            left: 20px;
+            color: #ff3333;
             font-size: 18px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
+            text-shadow: 0 0 5px #000;
+            pointer-events: none;
+            z-index: 10;
+        }
+        #crosshair {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 10px;
+            height: 10px;
+            transform: translate(-50%, -50%);
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 20px;
+            pointer-events: none;
+            z-index: 10;
+            user-select: none;
+        }
+        #instructions {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.85);
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            z-index: 20;
+            cursor: pointer;
         }
     </style>
+    <!-- Load Three.js library -->
+    <script src="https://cloudflare.com"></script>
 </head>
 <body>
 
-    <div id="game-container">
-        <div class="hud">Studio: Brothers Playtime | Objective: Escape Sunny</div>
-        <div id="player"></div>
-        <div id="sunny"></div>
+    <div id="instructions">
+        <h1 style="color: #ffd700; font-size: 40px;">SUNNY STORYTIME</h1>
+        <p style="font-size: 18px;">By Brothers Playtime</p>
+        <p style="margin-top: 40px; color: #aaa;">CLICK TO PLAY</p>
+        <p style="font-size: 14px; color: #666;">(WASD to Move | Mouse to Look Around)</p>
     </div>
 
+    <div id="hud">BROTHERS PLAYTIME | OBJECTIVE: ESCAPE THE TOY FACTORY</div>
+    <div id="crosshair">+</div>
+
     <script>
-        const player = document.getElementById('player');
-        const container = document.getElementById('game-container');
-        
-        // Player stats
-        let playerX = 380;
-        let playerY = 500;
-        const speed = 5;
-        
-        // Track keyboard inputs
-        const keys = {};
+        // --- 3D Scene Setup ---
+        const scene = new THREE.Scene();
+        scene.fog = new THREE.FogExp2(0x05050a, 0.15); // Eerie fog
 
-        window.addEventListener('keydown', (e) => { keys[e.key] = true; });
-        window.addEventListener('keyup', (e) => { keys[e.key] = false; });
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
 
-        // Main Game Loop
-        function gameLoop() {
-            // Move Left / Right
-            if (keys['ArrowLeft'] || keys['a']) playerX -= speed;
-            if (keys['ArrowRight'] || keys['d']) playerX += speed;
+        // --- Create the Room / Environment ---
+        // Floor
+        const floorGeo = THREE.PlaneGeometry(20, 100);
+        const floorMat = new THREE.MeshStandardMaterial({ color: 0x111115, roughness: 0.8 });
+        const floor = new THREE.Mesh(floorGeo, floorMat);
+        floor.rotation.x = -Math.PI / 2;
+        scene.add(floor);
+
+        // Left Wall
+        const wallLeftGeo = THREE.PlaneGeometry(100, 10);
+        const wallMat = new THREE.MeshStandardMaterial({ color: 0x0a0a0f, roughness: 0.9 });
+        const wallLeft = new THREE.Mesh(wallLeftGeo, wallMat);
+        wallLeft.position.set(-10, 5, 0);
+        wallLeft.rotation.y = Math.PI / 2;
+        scene.add(wallLeft);
+
+        // Right Wall
+        const wallRight = new THREE.Mesh(wallLeftGeo, wallMat);
+        wallRight.position.set(10, 5, 0);
+        wallRight.rotation.y = -Math.PI / 2;
+        scene.add(wallRight);
+
+        // --- Create Sunny (The Monster Placeholder) ---
+        const sunnyGeo = THREE.BoxGeometry(2, 5, 2);
+        const sunnyMat = new THREE.MeshBasicMaterial({ color: 0xffd700 }); // Glowing gold
+        const sunny = new THREE.Mesh(sunnyGeo, sunnyMat);
+        sunny.position.set(0, 2.5, -30); // Placed down the hallway
+        scene.add(sunny);
+
+        // --- Lighting ---
+        // Ambient light (very dim so it's scary)
+        const ambientLight = new THREE.AmbientLight(0x0a0a1a);
+        scene.add(ambientLight);
+
+        // Player Flashlight
+        const flashlight = new THREE.SpotLight(0xffffff, 3, 40, Math.PI / 6, 0.5, 1);
+        flashlight.position.set(0, 2, 0);
+        scene.add(flashlight);
+        scene.add(flashlight.target);
+
+        // --- Player Controls & Movement ---
+        camera.position.set(0, 2, 10); // Start position
+        
+        let moveForward = false, moveBackward = false, moveLeft = false, moveRight = false;
+        const speed = 0.15;
+
+        // Mouse Look Logic
+        let yaw = 0;
+        let pitch = 0;
+
+        const instructions = document.getElementById('instructions');
+        
+        instructions.addEventListener('click', () => {
+            instructions.requestPointerLock();
+        });
+
+        document.addEventListener('pointerlockchange', () => {
+            if (document.pointerLockElement === instructions) {
+                instructions.style.display = 'none';
+            } else {
+                instructions.style.display = 'flex';
+            }
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (document.pointerLockElement !== instructions) return;
             
-            // Move Up / Down
-            if (keys['ArrowUp'] || keys['w']) playerY -= speed;
-            if (keys['ArrowDown'] || keys['s']) playerY += speed;
+            yaw -= e.movementX * 0.002;
+            pitch -= e.movementY * 0.002;
+            
+            // Limit looking too far up or down
+            pitch = Math.max(-Math.PI/2.5, Math.min(Math.PI/2.5, pitch));
+            
+            camera.quaternion.setFromEuler(new THREE.Euler(pitch, yaw, 0, 'YXZ'));
+        });
 
-            // Keep player inside the room boundaries
-            if (playerX < 0) playerX = 0;
-            if (playerX > 760) playerX = 760;
-            if (playerY < 0) playerY = 0;
-            if (playerY > 560) playerY = 560;
+        // Keyboard Movement Listeners
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'w' || e.key === 'ArrowUp') moveForward = true;
+            if (e.key === 's' || e.key === 'ArrowDown') moveBackward = true;
+            if (e.key === 'a' || e.key === 'ArrowLeft') moveLeft = true;
+            if (e.key === 'd' || e.key === 'ArrowRight') moveRight = true;
+        });
 
-            // Render updated positions
-            player.style.left = playerX + 'px';
-            player.style.top = playerY + 'px';
+        window.addEventListener('keyup', (e) => {
+            if (e.key === 'w' || e.key === 'ArrowUp') moveForward = false;
+            if (e.key === 's' || e.key === 'ArrowDown') moveBackward = false;
+            if (e.key === 'a' || e.key === 'ArrowLeft') moveLeft = false;
+            if (e.key === 'd' || e.key === 'ArrowRight') moveRight = false;
+        });
 
-            requestAnimationFrame(gameLoop);
+        // --- Main 3D Game Loop ---
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // Calculate direction vectors based on where the player is looking
+            const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
+            forward.y = 0; // Don't fly up or sink down
+            forward.normalize();
+
+            const right = new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion);
+            right.y = 0;
+            right.normalize();
+
+            // Apply movement
+            if (moveForward) camera.position.addScaledVector(forward, speed);
+            if (moveBackward) camera.position.addScaledVector(forward, -speed);
+            if (moveLeft) camera.position.addScaledVector(right, -speed);
+            if (moveRight) camera.position.addScaledVector(right, speed);
+
+            // Lock camera inside hallway boundaries
+            camera.position.x = Math.max(-9, Math.min(9, camera.position.x));
+            camera.position.z = Math.max(-45, Math.min(45, camera.position.z));
+
+            // Attach flashlight to the camera position and direction
+            flashlight.position.copy(camera.position);
+            const targetPosition = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion).add(camera.position);
+            flashlight.target.position.copy(targetPosition);
+
+            // Slowly animate Sunny floating slightly up and down to look creepy
+            sunny.position.y = 2.5 + Math.sin(Date.now() * 0.003) * 0.2;
+
+            renderer.render(scene, camera);
         }
 
-        // Start the game loop
-        gameLoop();
-    </script>
+        animate();
 
+        // Handle window resizing
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
 </body>
 </html>
