@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sunny Storytime by Brothers Playtime</title>
+    <style>
+        body {
+            margin: 0;
+            background-color: #050505;
+            color: #fff;
+            font-family: 'Courier New', Courier, monospace;
+            overflow: hidden;
+        }
+        #game-container {
+            position: relative;
+            width: 800px;
+            height: 600px;
+            margin: 50px auto;
+            border: 4px solid #333;
+            background: radial-gradient(circle, #1a1a2e 0%, #0f0f1a 100%);
+            overflow: hidden;
+        }
+        #player {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background-color: #00bcd4;
+            border-radius: 5px;
+            top: 500px;
+            left: 380px;
+            box-shadow: 0 0 15px #00bcd4;
+        }
+        #sunny {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            background-color: #ffd700;
+            border-radius: 50%;
+            top: 50px;
+            left: 370px;
+            box-shadow: 0 0 20px #ffd700;
+        }
+        .hud {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-size: 18px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="game-container">
+        <div class="hud">Studio: Brothers Playtime | Objective: Escape Sunny</div>
+        <div id="player"></div>
+        <div id="sunny"></div>
+    </div>
+
+    <script>
+        const player = document.getElementById('player');
+        const container = document.getElementById('game-container');
+        
+        // Player stats
+        let playerX = 380;
+        let playerY = 500;
+        const speed = 5;
+        
+        // Track keyboard inputs
+        const keys = {};
+
+        window.addEventListener('keydown', (e) => { keys[e.key] = true; });
+        window.addEventListener('keyup', (e) => { keys[e.key] = false; });
+
+        // Main Game Loop
+        function gameLoop() {
+            // Move Left / Right
+            if (keys['ArrowLeft'] || keys['a']) playerX -= speed;
+            if (keys['ArrowRight'] || keys['d']) playerX += speed;
+            
+            // Move Up / Down
+            if (keys['ArrowUp'] || keys['w']) playerY -= speed;
+            if (keys['ArrowDown'] || keys['s']) playerY += speed;
+
+            // Keep player inside the room boundaries
+            if (playerX < 0) playerX = 0;
+            if (playerX > 760) playerX = 760;
+            if (playerY < 0) playerY = 0;
+            if (playerY > 560) playerY = 560;
+
+            // Render updated positions
+            player.style.left = playerX + 'px';
+            player.style.top = playerY + 'px';
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Start the game loop
+        gameLoop();
+    </script>
+
+</body>
+</html>
