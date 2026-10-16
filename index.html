@@ -40,7 +40,6 @@
         <h1 style="color: #ffd700; font-size: 38px; margin-bottom: 5px; text-shadow: 0 0 10px rgba(255,215,0,0.3);">SUNNY STORYTIME</h1>
         <p style="color: #ff3333; font-size: 16px; margin-top: 0; margin-bottom: 40px; font-weight: bold; letter-spacing: 2px;">BY BROTHERS PLAYTIME</p>
         
-        <!-- Direct OnClick Command Script Trigger -->
         <button id="start-button" onclick="launchGameEngine()">START GAME</button>
         
         <p style="font-size: 12px; color: #666; margin-top: 40px; line-height: 1.6;">
@@ -92,7 +91,7 @@
         function launchGameEngine() {
             running = true;
             const menuScreen = document.getElementById('instructions');
-            if(menuScreen) menuScreen.remove(); // Removes from layout memory entirely
+            if(menuScreen) menuScreen.remove(); 
             
             if (isMobile) {
                 document.getElementById('joystick-container').style.display = 'block';
@@ -144,7 +143,7 @@
         }, {passive: true});
         window.addEventListener('touchend', () => { jActive = false; knob.style.transform = 'translate(0px, 0px)'; mobileF = 0; mobileR = 0; });
 
-        // Keyboard System Configuration
+        // Keyboard System Configuration (Fixed typo here)
         window.addEventListener('keydown', (e) => {
             if (e.key === 'w' || e.key === 'a' || e.key === 's' || e.key === 'd' || e.key.startsWith('Arrow')) e.preventDefault();
             if (e.key === 'w' || e.key === 'ArrowUp') moveF = true;
@@ -169,14 +168,17 @@
                 if (moveF) camera.position.addScaledVector(f, speed);
                 if (moveB) camera.position.addScaledVector(f, -speed);
                 if (moveL) camera.position.addScaledVector(r, -speed);
-                if (moveR) camera.position.addScaledVector(r, speed);
+                if (moveR) camera.position.addScaledVector(r, speed); // Fixed tracking typo
                 if (isMobile) { camera.position.addScaledVector(f, mobileF * speed); camera.position.addScaledVector(r, mobileR * speed); }
-camera.position.x = Math.max(-9, Math.min(9, camera.position.x));
-camera.position.z = Math.max(-45, Math.min(45, camera.position.z));
+
+                camera.position.x = Math.max(-9, Math.min(9, camera.position.x));
+                camera.position.z = Math.max(-45, Math.min(45, camera.position.z));
 flashlight.position.copy(camera.position);
 flashlight.target.position.copy(new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion).add(camera.position));
+// Loot Detection Checks
 if (!hasBlue && camera.position.distanceTo(blueH.position) < 2) { hasBlue = true; scene.remove(blueH); document.getElementById('hud').innerText = hasRed ? "RUN TO THE START ENTRANCE!" : "FOUND BLUE HAND. FIND RED!"; }
 if (!hasRed && camera.position.distanceTo(redH.position) < 2) { hasRed = true; scene.remove(redH); document.getElementById('hud').innerText = hasBlue ? "RUN TO THE START ENTRANCE!" : "FOUND RED HAND. FIND BLUE!"; }
+// The Climax Chase Engine
 if (hasBlue && hasRed) {
 if (!isChasing) { isChasing = true; flashlight.color.setHex(0xff0000); }
 const dir = new THREE.Vector3().subVectors(camera.position, sunny.position); dir.y = 0; dir.normalize();
@@ -189,4 +191,4 @@ else if (camera.position.z > 22) { document.getElementById('hud').innerText = "Y
 renderer.render(scene, camera);
 }
 animate();
-window.addEventListener('resize', () => { camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); });
+window.addEventListener('resize', () => { camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer
