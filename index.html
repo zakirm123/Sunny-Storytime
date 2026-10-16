@@ -18,13 +18,13 @@
             color: rgba(255, 255, 255, 0.5); font-size: 20px; z-index: 10; pointer-events: none; 
         }
         
-        /* Unbreakable Main Title Overlay Screen */
-        #instructions { 
+        /* Your Custom Start Menu Overlay ID style */
+        #start-menu-overlay { 
             position: fixed; width: 100%; height: 100%; top: 0; left: 0;
             background: #0a0a10; color: #fff; display: flex; flex-direction: column; 
             justify-content: center; align-items: center; text-align: center; z-index: 99999; 
         }
-        #start-button { 
+        #start-game-btn { 
             padding: 22px 65px; font-size: 24px; font-family: monospace; font-weight: bold;
             background: #ffd700; color: #000; border: 3px solid #fff; border-radius: 10px; 
             cursor: pointer; box-shadow: 0 0 25px rgba(255, 215, 0, 0.6);
@@ -36,11 +36,12 @@
 </head>
 <body>
 
-    <div id="instructions">
+    <!-- Your exact layout IDs -->
+    <div id="start-menu-overlay">
         <h1 style="color: #ffd700; font-size: 38px; margin-bottom: 5px; text-shadow: 0 0 10px rgba(255,215,0,0.3);">SUNNY STORYTIME</h1>
         <p style="color: #ff3333; font-size: 16px; margin-top: 0; margin-bottom: 40px; font-weight: bold; letter-spacing: 2px;">BY BROTHERS PLAYTIME</p>
         
-        <button id="start-button" onclick="launchGameEngine()">START GAME</button>
+        <button id="start-game-btn">START GAME</button>
         
         <p style="font-size: 12px; color: #666; margin-top: 40px; line-height: 1.6;">
             PC: WASD + Mouse Look (Click floor to lock mouse)<br>
@@ -60,14 +61,14 @@
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
 
-        // Core Environment Architecture
+        // Map Bounds
         const floor = new THREE.Mesh(new THREE.PlaneGeometry(20, 100), new THREE.MeshStandardMaterial({ color: 0x111115, roughness: 0.8 }));
         floor.rotation.x = -Math.PI / 2; scene.add(floor);
         const wallL = new THREE.Mesh(new THREE.PlaneGeometry(100, 12), new THREE.MeshStandardMaterial({ color: 0x08080c, roughness: 0.9 }));
         wallL.position.set(-10, 6, 0); wallL.rotation.y = Math.PI / 2; scene.add(wallL);
         const wallR = wallL.clone(); wallR.position.set(10, 6, 0); wallR.rotation.y = -Math.PI / 2; scene.add(wallR);
 
-        // Entities & Interactive Asset Bundles
+        // Assets (Zakir's Favorite Blue Hand included!)
         let hasBlue = false, hasRed = false, isChasing = false, running = false;
         const blueH = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 0.2), new THREE.MeshStandardMaterial({ color: 0x0055ff, emissive: 0x002288 }));
         blueH.position.set(-4, 1.5, -10); scene.add(blueH);
@@ -76,7 +77,6 @@
         const sunny = new THREE.Mesh(new THREE.BoxGeometry(2, 6, 2), new THREE.MeshBasicMaterial({ color: 0xffd700 }));
         sunny.position.set(0, 3, -40); scene.add(sunny);
 
-        // Illumination Mapping
         scene.add(new THREE.AmbientLight(0x050510));
         const flashlight = new THREE.SpotLight(0xffffff, 4, 35, Math.PI / 5, 0.5, 1);
         flashlight.position.set(0, 2, 0); scene.add(flashlight); scene.add(flashlight.target);
@@ -87,11 +87,19 @@
         const speed = 0.12, sunnySpeed = 0.09;
         const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
 
-        // Core Activation System - Erases the blocking screen entirely to fix freezing
-        function launchGameEngine() {
+        // --- Your Exact Custom Code Fix ---
+        const startButton = document.getElementById('start-game-btn');
+        const startMenu = document.getElementById('start-menu-overlay');
+
+        startButton.addEventListener('click', startGame);
+        startButton.addEventListener('touchend', function(e) {
+            e.preventDefault();
+            startGame();
+        });
+
+        function startGame() {
             running = true;
-            const menuScreen = document.getElementById('instructions');
-            if(menuScreen) menuScreen.remove(); 
+            startMenu.style.display = 'none'; // Hide the start screen
             
             if (isMobile) {
                 document.getElementById('joystick-container').style.display = 'block';
@@ -100,14 +108,14 @@
             }
         }
 
-        // Pointer Lock fires on canvas interactions naturally after screen removal
+        // Click handler to re-lock mouse if player clicks back into the browser window
         document.body.addEventListener('click', () => {
             if (running && !isMobile && document.pointerLockElement !== document.body) {
                 document.body.requestPointerLock();
             }
         });
 
-        // Camera Logic
+        // Controls Logic
         document.addEventListener('mousemove', (e) => {
             if (!running || isMobile || document.pointerLockElement !== document.body) return;
             yaw -= e.movementX * 0.002; pitch -= e.movementY * 0.002;
@@ -115,7 +123,6 @@
             camera.quaternion.setFromEuler(new THREE.Euler(pitch, yaw, 0, 'YXZ'));
         });
 
-        // Mobile Swiping Look
         let lx = 0, ly = 0;
         document.addEventListener('touchstart', (e) => { if(!e.target.closest('#joystick-container')) { lx = e.touches.clientX; ly = e.touches.clientY; }}, {passive: true});
         document.addEventListener('touchmove', (e) => {
@@ -126,7 +133,6 @@
             lx = e.touches.clientX; ly = e.touches.clientY;
         }, {passive: true});
 
-        // Mobile Joystick Controls Matrix
         const knob = document.getElementById('joystick-knob');
         let jActive = false;
         document.getElementById('joystick-container').addEventListener('touchstart', () => jActive = true, {passive: true});
@@ -143,7 +149,6 @@
         }, {passive: true});
         window.addEventListener('touchend', () => { jActive = false; knob.style.transform = 'translate(0px, 0px)'; mobileF = 0; mobileR = 0; });
 
-        // Keyboard System Configuration (Fixed typo here)
         window.addEventListener('keydown', (e) => {
             if (e.key === 'w' || e.key === 'a' || e.key === 's' || e.key === 'd' || e.key.startsWith('Arrow')) e.preventDefault();
             if (e.key === 'w' || e.key === 'ArrowUp') moveF = true;
@@ -158,7 +163,7 @@
             if (e.key === 'd' || e.key === 'ArrowRight') moveR = false;
         });
 
-        // Main Rendering/Logic System Loop
+        // Main Rendering/Logic Loop
         function animate() {
             requestAnimationFrame(animate);
             if (running) {
@@ -168,17 +173,15 @@
                 if (moveF) camera.position.addScaledVector(f, speed);
                 if (moveB) camera.position.addScaledVector(f, -speed);
                 if (moveL) camera.position.addScaledVector(r, -speed);
-                if (moveR) camera.position.addScaledVector(r, speed); // Fixed tracking typo
+                if (moveR) camera.position.addScaledVector(r, speed);
                 if (isMobile) { camera.position.addScaledVector(f, mobileF * speed); camera.position.addScaledVector(r, mobileR * speed); }
 
                 camera.position.x = Math.max(-9, Math.min(9, camera.position.x));
-                camera.position.z = Math.max(-45, Math.min(45, camera.position.z));
+            camera.position.z = Math.max(-45, Math.min(45, camera.position.z));
 flashlight.position.copy(camera.position);
 flashlight.target.position.copy(new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion).add(camera.position));
-// Loot Detection Checks
 if (!hasBlue && camera.position.distanceTo(blueH.position) < 2) { hasBlue = true; scene.remove(blueH); document.getElementById('hud').innerText = hasRed ? "RUN TO THE START ENTRANCE!" : "FOUND BLUE HAND. FIND RED!"; }
 if (!hasRed && camera.position.distanceTo(redH.position) < 2) { hasRed = true; scene.remove(redH); document.getElementById('hud').innerText = hasBlue ? "RUN TO THE START ENTRANCE!" : "FOUND RED HAND. FIND BLUE!"; }
-// The Climax Chase Engine
 if (hasBlue && hasRed) {
 if (!isChasing) { isChasing = true; flashlight.color.setHex(0xff0000); }
 const dir = new THREE.Vector3().subVectors(camera.position, sunny.position); dir.y = 0; dir.normalize();
@@ -191,4 +194,4 @@ else if (camera.position.z > 22) { document.getElementById('hud').innerText = "Y
 renderer.render(scene, camera);
 }
 animate();
-window.addEventListener('resize', () => { camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer
+window.addEventListener('resize', () => { camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); });
