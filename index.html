@@ -5,15 +5,35 @@
 html,body{margin:0;height:100%;overflow:hidden;background:#000;font-family:Arial,sans-serif;color:#fff;user-select:none;-webkit-user-select:none;touch-action:none}
 canvas{display:block;touch-action:none}
 .o{position:fixed;pointer-events:none;text-shadow:0 0 5px #000}
-#title{position:fixed;inset:0;background:radial-gradient(#3a2a00,#000);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:5;text-align:center;animation:fl 4s infinite}
-#title h1{font-size:min(9vw,72px);color:#ffd21f;margin:0;animation:gl 2s infinite}
-#title h2{color:#fa5;font-weight:400;margin:6px 0 30px}
-@keyframes gl{0%,100%{text-shadow:0 0 20px #f80}50%{text-shadow:0 0 60px #f40}}
-@keyframes fl{0%,92%,100%{filter:none}94%{filter:brightness(.3)}96%{filter:brightness(1.4)}}
 button{background:#ffd21f;border:0;padding:12px 36px;font-size:20px;font-weight:700;border-radius:8px;cursor:pointer;margin:4px}
-#skip{display:none;background:#555;color:#fff;font-size:14px;padding:8px 18px}
+/* title screen */
+#title{position:fixed;inset:0;background:radial-gradient(ellipse at 50% 40%,#5a3a00 0%,#1a1000 55%,#000 100%);z-index:5;overflow:hidden}
+#spin{position:absolute;left:-50%;top:-50%;width:200%;height:200%;background:repeating-conic-gradient(from 0deg at 50% 50%,#ffb30026 0 6deg,transparent 6deg 18deg);animation:spin 70s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+#vig{position:absolute;inset:0;background:radial-gradient(ellipse at center,transparent 35%,#000e 100%);pointer-events:none}
+#fx{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.wrap{position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:8px;overflow:auto;animation:fl 5s infinite}
+@keyframes fl{0%,90%,100%{filter:none}92%{filter:brightness(.25)}94%{filter:brightness(1.5)}96%{filter:brightness(.6)}}
+#face{width:min(32vh,250px);height:auto;filter:drop-shadow(0 0 25px #f90);animation:bob 3s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-10px) rotate(1.5deg)}}
+.pupil{animation:pu 1.6s ease-in-out infinite}
+@keyframes pu{50%{opacity:.35}}
+.tag{color:#fa5;letter-spacing:6px;font-size:13px;margin-top:6px}
+#title h1{font-size:min(10vw,72px);margin:2px 0;letter-spacing:4px;background:linear-gradient(#fff3a0,#ffb800 55%,#e06000);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 14px #f80);animation:gl 2.5s infinite}
+@keyframes gl{50%{filter:drop-shadow(0 0 32px #f40)}}
+#title h2{color:#fa5;font-weight:400;margin:0 0 14px;font-size:min(4vw,19px);letter-spacing:5px}
+.mb{display:block;width:min(300px,80vw);margin:7px auto;background:linear-gradient(#ffd21f,#e89a00);color:#2a1800;border:3px solid #fff4;border-radius:50px;font-size:21px;letter-spacing:4px;padding:11px 0;transition:.15s}
+.mb:hover{transform:scale(1.07);box-shadow:0 0 28px #ffb300}
+.mb.g{background:linear-gradient(#444,#222);color:#fff}
+#tapebox{display:none}
+#tapebox p{font-size:20px;color:#ffd21f;animation:pu 1s infinite}
+#skip{background:#555;color:#fff;font-size:14px;padding:8px 18px}
+.ft{color:#a86;font-size:12px;margin-top:12px;max-width:520px}
+#err{position:fixed;left:8px;bottom:8px;right:8px;color:#f66;font-size:13px;z-index:20;text-align:left}
+@media (max-height:520px){.wrap{flex-direction:row;gap:26px}#face{width:34vh}.mb{margin:5px auto;padding:8px 0;font-size:17px}.ft{display:none}}
+/* hud */
 #cross{left:50%;top:50%;width:6px;height:6px;margin:-3px;background:#fff9;border-radius:50%}
-#obj{left:14px;top:12px;font-size:15px;max-width:45vw}
+#obj{left:14px;top:12px;font-size:15px;max-width:40vw}
 #inv{right:14px;top:12px;font-size:15px;text-align:right}
 #prompt{left:50%;top:58%;transform:translateX(-50%);font-size:20px;text-align:center}
 #sub{left:50%;bottom:8%;transform:translateX(-50%);width:80%;text-align:center;font-size:22px;background:#0007;border-radius:6px;display:none}
@@ -23,9 +43,19 @@ button{background:#ffd21f;border:0;padding:12px 36px;font-size:20px;font-weight:
 #keypad{display:none;position:fixed;inset:0;margin:auto;width:280px;height:210px;background:#222;border:3px solid #ffd21f;z-index:8;text-align:center;border-radius:12px;padding:10px}
 #keypad .c{width:50px;height:50px;border-radius:50%;padding:0;margin:6px}
 #kd{font-size:30px;height:40px}
-#fade{position:fixed;inset:0;background:#000;opacity:0;pointer-events:none;transition:opacity 2s;z-index:9;overflow:hidden;text-align:center}
+#fade{position:fixed;inset:0;background:#000;opacity:0;pointer-events:none;transition:opacity 2s;z-index:12;overflow:hidden;text-align:center}
 #cred{display:none;font-size:24px;line-height:2;animation:up 32s linear forwards}
 @keyframes up{from{transform:translateY(100vh)}to{transform:translateY(-110%)}}
+/* settings + pause */
+#gear{position:fixed;top:8px;left:50%;transform:translateX(-50%);z-index:4;width:44px;height:36px;padding:0;font-size:20px;background:#0008;color:#fff;border:1px solid #fff5;display:none}
+#set{position:fixed;inset:0;background:#000c;z-index:10;display:none;align-items:center;justify-content:center}
+.panel{background:#1b1308;border:3px solid #ffd21f;border-radius:14px;padding:14px 20px;width:min(440px,92vw);max-height:90vh;overflow:auto;box-sizing:border-box}
+.panel h3{margin:0 0 6px;color:#ffd21f;letter-spacing:3px;text-align:center}
+.row{display:flex;align-items:center;gap:10px;margin:9px 0;font-size:16px}
+.row span{flex:1}.row input[type=range]{width:150px}.row b{width:42px;text-align:right;font-size:14px}
+.row input[type=checkbox]{width:24px;height:24px}
+.panel button{font-size:16px;padding:9px 22px}
+#paused{position:fixed;inset:0;background:#000b;z-index:9;display:none;flex-direction:column;align-items:center;justify-content:center;font-size:28px;letter-spacing:4px}
 /* mobile controls */
 #tc{display:none}
 #joy{position:fixed;left:24px;bottom:28px;width:130px;height:130px;border-radius:50%;background:#fff2;border:2px solid #fff5;z-index:4}
@@ -37,12 +67,37 @@ button{background:#ffd21f;border:0;padding:12px 36px;font-size:20px;font-weight:
 #bJ{right:110px;bottom:116px}
 #bC{right:196px;bottom:40px}
 </style></head><body>
-<div id="title"><h1>SUNNY STORYTIME</h1><h2>Chapter 1: Sunny's Time</h2>
-<button id="play">PLAY</button><button id="skip">Skip tape</button>
-<p style="max-width:520px;color:#aaa;font-size:14px;padding:0 12px">PC: WASD move - Shift run - Space jump - C crouch - Mouse look - E interact<br>Left click = Blue hand - Right click = Green hand (hold to grip)<br>Mobile: joystick to move, drag the screen to look, use the buttons on the right.</p></div>
+
+<div id="title"><div id="spin"></div><canvas id="fx"></canvas><div id="vig"></div>
+<div class="wrap">
+<svg id="face" viewBox="-150 -150 300 300">
+<defs><radialGradient id="sh" cx="50%" cy="40%" r="60%"><stop offset="0" stop-color="#ffe35a"/><stop offset=".7" stop-color="#e0a000"/><stop offset="1" stop-color="#8a5a00"/></radialGradient></defs>
+<g><animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="20s" repeatCount="indefinite"/>
+<g fill="#ff8a00" stroke="#a04000" stroke-width="2">
+<polygon points="-16,-96 0,-148 16,-96"/><polygon points="-16,-96 0,-148 16,-96" transform="rotate(30)"/><polygon points="-16,-96 0,-148 16,-96" transform="rotate(60)"/><polygon points="-16,-96 0,-148 16,-96" transform="rotate(90)"/><polygon points="-16,-96 0,-148 16,-96" transform="rotate(120)"/><polygon points="-16,-96 0,-148 16,-96" transform="rotate(150)"/><polygon points="-16,-96 0,-148 16,-96" transform="rotate(180)"/><polygon points="-16,-96 0,-148 16,-96" transform="rotate(210)"/><polygon points="-16,-96 0,-148 16,-96" transform="rotate(240)"/><polygon points="-16,-96 0,-148 16,-96" transform="rotate(270)"/><polygon points="-16,-96 0,-148 16,-96" transform="rotate(300)"/><polygon points="-16,-96 0,-148 16,-96" transform="rotate(330)"/>
+</g></g>
+<circle r="92" fill="url(#sh)" stroke="#6a4000" stroke-width="4"/>
+<ellipse cx="-34" cy="-14" rx="17" ry="23" fill="#050505"/><ellipse cx="34" cy="-14" rx="17" ry="23" fill="#050505"/>
+<circle class="pupil" cx="-34" cy="-10" r="7" fill="#f00"/><circle class="pupil" cx="34" cy="-10" r="7" fill="#f00"/>
+<path d="M-60 -48 L-16 -34" stroke="#050505" stroke-width="9" stroke-linecap="round"/><path d="M60 -48 L16 -34" stroke="#050505" stroke-width="9" stroke-linecap="round"/>
+<path d="M-60 24 Q0 96 60 24 Q0 46 -60 24Z" fill="#050505"/>
+<path d="M-46 32 L-38 52 L-30 35 L-22 56 L-14 37 L-6 58 L2 37 L10 58 L18 37 L26 56 L34 35 L42 52 L50 32Z" fill="#f4f0e0"/>
+</svg>
+<div class="tag">BROTHERS PLAYTIME CO. PRESENTS</div>
+<h1>SUNNY STORYTIME</h1><h2>CHAPTER 1: SUNNY'S TIME</h2>
+<div id="menu"><button class="mb" id="play">PLAY</button><button class="mb g" id="setb">SETTINGS</button></div>
+<div id="tapebox"><p>&#9654; TAPE PLAYING...</p><button id="skip">Skip tape</button></div>
+<div class="ft">PC: WASD move &bull; Shift run &bull; Space jump &bull; C crouch &bull; E interact &bull; P settings<br>Left click = Blue hand &bull; Right click = Green hand<br>Mobile: joystick + drag screen to look + buttons<br>Founder: Zakir &bull; Co-Founder: Muawiya</div>
+</div></div>
+
+<div id="err"></div>
 <div class="o" id="cross"></div><div class="o" id="obj"></div><div class="o" id="inv"></div>
 <div class="o" id="prompt"></div><div class="o" id="sub"></div><div class="o" id="msg"></div>
+<button id="gear">&#9881;</button>
 <div id="dead">SUNNY GOT YOU!</div>
+<div id="paused"><div style="margin-bottom:14px">PAUSED</div><button class="mb" id="resume">RESUME</button><button class="mb g" id="pset">SETTINGS</button></div>
+<div id="set"><div class="panel"><h3>SETTINGS</h3><div id="rows"></div>
+<div style="text-align:center;margin-top:12px"><button id="reset" style="background:#555;color:#fff">Reset</button> <button id="sclose">Close</button></div></div></div>
 <div id="tc">
 <div id="joy"><div id="knob"></div></div>
 <button class="tb" id="bE">USE</button><button class="tb" id="bB">BLUE</button><button class="tb" id="bG">GREEN</button><button class="tb" id="bJ">JUMP</button><button class="tb" id="bC">CROUCH</button>
@@ -51,16 +106,33 @@ button{background:#ffd21f;border:0;padding:12px 36px;font-size:20px;font-weight:
 <button class="c" style="background:#e22" onclick="kp('red')"></button><button class="c" style="background:#2c4" onclick="kp('green')"></button><button class="c" style="background:#26f" onclick="kp('blue')"></button><button class="c" style="background:#fd2" onclick="kp('yellow')"></button><br>
 <button style="font-size:14px;padding:6px 16px" onclick="kclose()">Close</button></div>
 <div id="fade"><div id="cred">SUNNY STORYTIME<br>Chapter 1: Sunny's Time<br><br>Founder of Brothers Playtime Co.<br><b>Zakir</b><br><br>Co-Founder<br><b>Muawiya</b><br><br>Beta Testers<br><b>Mohamed</b><br><b>Zuheitha</b><br><br>Thanks for playing!<br>Chapter 2 coming soon...</div></div>
+
+<script>window.onerror=(m,s,l)=>{var e=document.getElementById('err');if(e)e.textContent='Error: '+m+' (line '+l+')'}</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
 const $=id=>document.getElementById(id),V=THREE.Vector3;
 const touch=matchMedia('(pointer:coarse)').matches;
 const BL=touch?'BLUE button':'Left Click',GR=touch?'GREEN button':'Right Click';
-const R=new THREE.WebGLRenderer({antialias:!touch});R.setPixelRatio(touch?1:Math.min(devicePixelRatio,2));R.setSize(innerWidth,innerHeight);document.body.appendChild(R.domElement);
+
+/* ---------- settings ---------- */
+const DEF={sens:1,fov:75,bright:1,vol:1,voice:1,subs:1,bob:1,hq:touch?0:1};
+let CFG=Object.assign({},DEF);try{Object.assign(CFG,JSON.parse(localStorage.getItem('sunnyCfg')||'{}'))}catch(e){}
+const saveCfg=()=>{try{localStorage.setItem('sunnyCfg',JSON.stringify(CFG))}catch(e){}};
+
+const R=new THREE.WebGLRenderer({antialias:!touch});R.setPixelRatio(1);R.setSize(innerWidth,innerHeight);document.body.insertBefore(R.domElement,document.body.firstChild);
 const scene=new THREE.Scene();scene.background=new THREE.Color(0x07070b);scene.fog=new THREE.Fog(0x07070b,4,40);
 const cam=new THREE.PerspectiveCamera(75,innerWidth/innerHeight,.1,100);cam.rotation.order='YXZ';scene.add(cam);
-cam.add(new THREE.PointLight(0xffeecc,1.1,22));scene.add(new THREE.AmbientLight(0x9999bb,.6));
+const camL=new THREE.PointLight(0xffeecc,1.1,22),amb=new THREE.AmbientLight(0x9999bb,.6);cam.add(camL);scene.add(amb);
+function apply(){R.setPixelRatio(CFG.hq?Math.min(devicePixelRatio,touch?1.5:2):.6);R.setSize(innerWidth,innerHeight);amb.intensity=.6*CFG.bright;camL.intensity=1.1*CFG.bright;saveCfg()}
+apply();
 addEventListener('resize',()=>{R.setSize(innerWidth,innerHeight);cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix()});
+const ROWS=[['sens','Look sensitivity','r',.3,2.5,.05],['fov','Field of view','r',60,100,1],['bright','Brightness','r',.5,2,.05],['vol','Volume','r',0,1,.05],['voice','Tape voices','c'],['subs','Subtitles','c'],['bob','Head bob','c'],['hq','High quality graphics','c']];
+function buildSets(){const b=$('rows');b.innerHTML='';ROWS.forEach(([k,l,t,mn,mx,st])=>{const r=document.createElement('label');r.className='row';r.innerHTML='<span>'+l+'</span>';const i=document.createElement('input');
+ if(t=='r'){i.type='range';i.min=mn;i.max=mx;i.step=st;i.value=CFG[k];const v=document.createElement('b');v.textContent=Math.round(CFG[k]*100)/100;i.oninput=()=>{CFG[k]=+i.value;v.textContent=Math.round(CFG[k]*100)/100;apply();cam.fov=CFG.fov;cam.updateProjectionMatrix()};r.append(i,v)}
+ else{i.type='checkbox';i.checked=!!CFG[k];i.onchange=()=>{CFG[k]=i.checked?1:0;apply()};r.append(i)}b.append(r)})}
+function openSet(){buildSets();if(started){ui=1;document.exitPointerLock()}$('paused').style.display='none';$('set').style.display='flex'}
+function closeSet(){saveCfg();$('set').style.display='none';if(started)ui=$('keypad').style.display=='block'?1:0;updPause()}
+function updPause(){$('paused').style.display=(started&&!ui&&!touch&&!locked())?'flex':'none'}
 
 /* ---------- state ---------- */
 const S={tape:null,paper:0,key:0,blue:0,green:0,light:0,hands:0,circuit:0,plush:0,chase:0,dead:0,
@@ -107,12 +179,12 @@ const N=touch?200:500,dp=new Float32Array(N*3);for(let i=0;i<N;i++){dp[i*3]=Math
 const dg=new THREE.BufferGeometry();dg.setAttribute('position',new THREE.BufferAttribute(dp,3));scene.add(new THREE.Points(dg,new THREE.PointsMaterial({color:0xffeecc,size:.05,transparent:true,opacity:.5})));
 
 /* ---------- audio / voice ---------- */
-let ac;function beep(f,d,t,v){try{ac=ac||new AudioContext();const o=ac.createOscillator(),g=ac.createGain();o.type=t||'sine';o.frequency.value=f;g.gain.setValueAtTime(v||.1,ac.currentTime);g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+d);o.connect(g);g.connect(ac.destination);o.start();o.stop(ac.currentTime+d)}catch(e){}}
+let ac;function beep(f,d,t,v){try{ac=ac||new AudioContext();const o=ac.createOscillator(),g=ac.createGain();o.type=t||'sine';o.frequency.value=f;g.gain.setValueAtTime(Math.max(.0002,(v||.1)*CFG.vol),ac.currentTime);g.gain.exponentialRampToValueAtTime(.0001,ac.currentTime+d);o.connect(g);g.connect(ac.destination);o.start();o.stop(ac.currentTime+d)}catch(e){}}
 const jingle=()=>[1200,1500,1300,1800,1400].forEach((f,i)=>setTimeout(()=>beep(f,.25,'triangle',.12),i*110));
 const shatter=()=>{for(let i=0;i<14;i++)setTimeout(()=>beep(1500+Math.random()*3000,.12,'sawtooth',.08),i*25)};
 let sayId=0;function say(L,cb){const id=++sayId;let i=0;(function n(){if(id!==sayId)return;if(i>=L.length){$('sub').style.display='none';cb&&cb();return}
- const l=L[i++];$('sub').textContent=l;$('sub').style.display='block';
- try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(l);u.rate=.85;u.pitch=.5;speechSynthesis.speak(u)}catch(e){}
+ const l=L[i++];$('sub').textContent=l;$('sub').style.display=CFG.subs?'block':'none';
+ try{speechSynthesis.cancel();if(CFG.voice&&CFG.vol>0){const u=new SpeechSynthesisUtterance(l);u.rate=.85;u.pitch=.5;u.volume=CFG.vol;speechSynthesis.speak(u)}}catch(e){}
  setTimeout(n,1700+l.length*62)})()}
 
 /* ---------- tapes ---------- */
@@ -146,7 +218,7 @@ addInt(keypadM,'Use color keypad',()=>{if(!S.paper)return msg('You need the colo
 label('BROTHERS PLAYTIME CO.',7,.9,'#ffd21f','#111',0,3.6,-.3,0,36);
 function kp(c){ent.push(c);const ic={red:'\u{1F534}',green:'\u{1F7E2}',blue:'\u{1F535}',yellow:'\u{1F7E1}'};$('kd').textContent=ent.map(x=>ic[x]).join('');beep(600+ent.length*100,.1);
  if(ent.length==4){if(ent.join()==S.code.join()){setTimeout(()=>{kclose();openDoor(0);msg('Access granted');obj('Go through the door.')},300)}else{beep(150,.4,'square');setTimeout(()=>{ent=[];$('kd').textContent='WRONG'},200)}}}
-function kclose(){ui=0;$('keypad').style.display='none'}
+function kclose(){ui=0;$('keypad').style.display='none';updPause()}
 
 /* R1 posters + tape + pack */
 [-20.5,-26].forEach(z=>{label('SUNNY\nJUST WANNA\nPLAY',2.2,3,'#ffd21f','#a33',-7.75,2.4,z,Math.PI/2,52);label('SUNNY\nJUST WANNA\nPLAY',2.2,3,'#222','#fd2',7.75,2.4,z-2,-Math.PI/2,52)});
@@ -235,23 +307,32 @@ box(-7.2,1.2,-153,.1,.08,16,0xaaaaaa,0);box(7.2,1.2,-153,.1,.08,16,0xaaaaaa,0);
 label("HOME - Toppy's Room",4,.8,'#fff','#a46',0,4,-144.4,0,36);
 for(let i=0;i<5;i++)box(-5,.15+i*.15,-150-i*.8,3,.3,.8,0x6a4a2a,1);
 const wl=new THREE.PointLight(0xffaa66,1.4,30);wl.position.set(0,4,-154);scene.add(wl);
-const top=box(0,1.3,-158,2,2.6,2,0xe8a0c0,1,0x331122);label('TOPPY',1.4,.5,'#fff',null,0,2.2,-156.95,0,60);
-addInt(top,"Open Toppy's container",()=>{ui=1;$('tc').style.display='none';document.exitPointerLock();$('fade').style.opacity=1;setTimeout(()=>{$('cred').style.display='block'},2200)},4);
+const toppy=box(0,1.3,-158,2,2.6,2,0xe8a0c0,1,0x331122);label('TOPPY',1.4,.5,'#fff',null,0,2.2,-156.95,0,60);
+addInt(toppy,"Open Toppy's container",()=>{ui=1;$('tc').style.display='none';$('gear').style.display='none';document.exitPointerLock();$('fade').style.opacity=1;setTimeout(()=>{$('cred').style.display='block'},2200)},4);
 zones.push([-144.5,()=>obj("Open Toppy's container.")]);
 zones.push([-16.5,()=>obj('Find a tape and a tape player.')]);
 zones.push([-32.5,()=>obj('Break the hand scanner (blue hand) and take the key from Sunny.')]);
 zones.push([-48.5,()=>obj('Power the light with the blue hand on the socket.')]);
 
+/* ---------- title screen ---------- */
+(function(){const c=$('fx'),g=c.getContext('2d');let w,h,P=[];function rs(){w=c.width=innerWidth;h=c.height=innerHeight}rs();addEventListener('resize',rs);
+ for(let i=0;i<60;i++)P.push({x:Math.random()*w,y:Math.random()*h,r:Math.random()*2+.5,v:Math.random()*.6+.2,p:Math.random()*6});
+ (function f(){if($('title').style.display=='none')return;g.clearRect(0,0,w,h);P.forEach(p=>{p.y-=p.v;p.x+=Math.sin(p.p+=.01)*.4;if(p.y<0){p.y=h;p.x=Math.random()*w}g.fillStyle='rgba(255,190,60,'+(.3+.4*Math.sin(p.p*3))+')';g.beginPath();g.arc(p.x,p.y,p.r,0,6.3);g.fill()});requestAnimationFrame(f)})()})();
+
 /* ---------- input ---------- */
-$('play').onclick=()=>{if(!touch)R.domElement.requestPointerLock();else{try{document.documentElement.requestFullscreen();screen.orientation.lock('landscape')}catch(e){}}
- $('play').style.display='none';$('skip').style.display='inline';say(T.t0,begin)};
+$('setb').onclick=openSet;$('pset').onclick=openSet;$('gear').onclick=openSet;$('sclose').onclick=closeSet;
+$('reset').onclick=()=>{CFG=Object.assign({},DEF);buildSets();apply();cam.fov=CFG.fov;cam.updateProjectionMatrix()};
+$('resume').onclick=()=>R.domElement.requestPointerLock();
+document.addEventListener('pointerlockchange',updPause);
+$('play').onclick=()=>{try{if(!touch)R.domElement.requestPointerLock();else{document.documentElement.requestFullscreen();screen.orientation.lock('landscape')}}catch(e){}
+ beep(200,.06,'square',.15);$('menu').style.display='none';$('tapebox').style.display='block';say(T.t0,begin)};
 $('skip').onclick=()=>{sayId++;try{speechSynthesis.cancel()}catch(e){}begin()};
-function begin(){if(started)return;started=1;$('title').style.display='none';$('sub').style.display='none';obj('Find a tape and put it in the tape player.');inv();
+function begin(){if(started)return;started=1;$('title').style.display='none';$('sub').style.display='none';obj('Find a tape and put it in the tape player.');inv();$('gear').style.display='block';
  if(touch)$('tc').style.display='block';else R.domElement.requestPointerLock()}
 R.domElement.addEventListener('click',()=>{if(started&&!ui&&!locked())R.domElement.requestPointerLock()});
-addEventListener('keydown',e=>{keys[e.code]=1;if(e.code=='Space')e.preventDefault();if(e.code=='KeyE'&&started&&!ui&&locked())interact()});
+addEventListener('keydown',e=>{keys[e.code]=1;if(e.code=='Space')e.preventDefault();if(e.code=='KeyE'&&started&&!ui&&locked())interact();if(e.code=='KeyP'&&started&&!ui)openSet()});
 addEventListener('keyup',e=>keys[e.code]=0);
-addEventListener('mousemove',e=>{if(touch||!started||ui||!locked()||S.dead)return;yaw-=e.movementX*.0022;pitch=Math.max(-1.4,Math.min(1.4,pitch-e.movementY*.0022))});
+addEventListener('mousemove',e=>{if(touch||!started||ui||!locked()||S.dead)return;yaw-=e.movementX*.0022*CFG.sens;pitch=Math.max(-1.4,Math.min(1.4,pitch-e.movementY*.0022*CFG.sens))});
 addEventListener('contextmenu',e=>e.preventDefault());
 const fwd=()=>new V(0,0,-1).applyEuler(cam.rotation),wp=new V();
 function target(){const f=fwd(),best=[null,0];ints.forEach(o=>{if(!o.m.visible)return;const l=typeof o.l=='function'?o.l():o.l;o.m.getWorldPosition(wp);const d=cam.position.distanceTo(wp);if(d>o.r)return;
@@ -278,7 +359,7 @@ const jend=e=>{for(const t of e.changedTouches)if(t.identifier==J.id){J.id=null;
 joy.addEventListener('touchend',jend);joy.addEventListener('touchcancel',jend);
 let L={id:null,x:0,y:0};
 R.domElement.addEventListener('touchstart',e=>{e.preventDefault();if(L.id===null){const t=e.changedTouches[0];L={id:t.identifier,x:t.clientX,y:t.clientY}}},{passive:false});
-R.domElement.addEventListener('touchmove',e=>{e.preventDefault();for(const t of e.changedTouches)if(t.identifier==L.id){if(started&&!ui&&!S.dead){yaw-=(t.clientX-L.x)*.006;pitch=Math.max(-1.4,Math.min(1.4,pitch-(t.clientY-L.y)*.006))}L.x=t.clientX;L.y=t.clientY}},{passive:false});
+R.domElement.addEventListener('touchmove',e=>{e.preventDefault();for(const t of e.changedTouches)if(t.identifier==L.id){if(started&&!ui&&!S.dead){yaw-=(t.clientX-L.x)*.006*CFG.sens;pitch=Math.max(-1.4,Math.min(1.4,pitch-(t.clientY-L.y)*.006*CFG.sens))}L.x=t.clientX;L.y=t.clientY}},{passive:false});
 const lend=e=>{for(const t of e.changedTouches)if(t.identifier==L.id)L.id=null};
 R.domElement.addEventListener('touchend',lend);R.domElement.addEventListener('touchcancel',lend);
 function tbtn(id,down,up){const b=$(id);b.addEventListener('touchstart',e=>{e.preventDefault();e.stopPropagation();down()},{passive:false});
@@ -291,7 +372,7 @@ tbtn('bC',()=>{cr=!cr;$('bC').style.background=cr?'#ff9900cc':'#0008'});
 
 /* ---------- loop ---------- */
 const blocked=(x,z)=>{const b=new THREE.Box3(new V(x-.4,.1,z-.4),new V(x+.4,2,z+.4));return solids.some(m=>m.visible&&b.intersectsBox(m.userData.b))};
-const clock=new THREE.Clock();let tt=0;
+const clock=new THREE.Clock();let tt=0;cam.fov=CFG.fov;cam.updateProjectionMatrix();
 function tick(){requestAnimationFrame(tick);const dt=Math.min(clock.getDelta(),.05);tt+=dt;
  const jm=Math.hypot(J.x,J.y),crouch=cr||keys.KeyC||keys.ControlLeft,run=!crouch&&(keys.ShiftLeft||jm>.92),
   mv=started&&!ui&&!S.dead&&(keys.KeyW||keys.KeyS||keys.KeyA||keys.KeyD||jm>.15);
@@ -313,9 +394,9 @@ function tick(){requestAnimationFrame(tick);const dt=Math.min(clock.getDelta(),.
  hbT-=dt;if(k>0&&hbT<0){hbT=.9-.5*k;beep(55,.2,'sine',.35);setTimeout(()=>beep(50,.2,'sine',.25),150)}
  scene.fog.color.setRGB(.03+k*.15*(.5+.5*Math.sin(tt*8)),.03,.045);scene.background.copy(scene.fog.color);
  /* camera */
- bt+=dt*(mv&&jy==0?(run?13:crouch?5:9):0);cam.fov+=((mv&&run?82:75)-cam.fov)*dt*5;cam.updateProjectionMatrix();
+ bt+=dt*(mv&&jy==0?(run?13:crouch?5:9):0);cam.fov+=((mv&&run?CFG.fov+7:CFG.fov)-cam.fov)*dt*5;cam.updateProjectionMatrix();
  ch+=((crouch?1.0:1.7)-ch)*Math.min(1,dt*10);
- cam.position.set(px+(Math.random()-.5)*.06*k,ch+jy+(jy==0?Math.sin(bt)*.045:0),pz);cam.rotation.set(pitch+(Math.random()-.5)*.03*k,yaw,Math.sin(bt*.5)*.012);
+ cam.position.set(px+(Math.random()-.5)*.06*k,ch+jy+(jy==0?Math.sin(bt)*.045*CFG.bob:0),pz);cam.rotation.set(pitch+(Math.random()-.5)*.03*k,yaw,Math.sin(bt*.5)*.012*CFG.bob);
  if(S.dead)cam.lookAt(sunny.position.x,3.1,sunny.position.z);
  /* animation */
  for(let i=anim.length-1;i>=0;i--)if(anim[i](dt))anim.splice(i,1);
