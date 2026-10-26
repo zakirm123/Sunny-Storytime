@@ -126,6 +126,8 @@ const BL=touch?'BLUE button':'Left Click',GR=touch?'GREEN button':'Right Click';
 const unlock=()=>{try{const f=document.exitPointerLock||document.mozExitPointerLock;if(f)f.call(document)}catch(e){}};
 const lock=()=>{try{if(touch)return;const e=R.domElement,f=e.requestPointerLock||e.mozRequestPointerLock;if(f){const p=f.call(e);if(p&&p.catch)p.catch(()=>{})}}catch(e){}};
 const fsq=()=>{try{const e=document.documentElement,f=e.requestFullscreen||e.webkitRequestFullscreen;if(f){const p=f.call(e);if(p&&p.catch)p.catch(()=>{})}const o=screen.orientation;if(o&&o.lock){const p=o.lock('landscape');if(p&&p.catch)p.catch(()=>{})}}catch(e){}};
+/* clock for the tapes: 9:59 AM rolls over to 10:00 AM */
+function fmtT(n){const h=Math.floor(n/60)%24;return (h%12||12)+':'+('0'+n%60).slice(-2)+' '+(h>=12?'PM':'AM')}
 
 /* ---------- settings ---------- */
 const DEF={sens:1,fov:75,bright:1,vol:1,voice:1,subs:1,bob:1,hq:touch?0:1,shadows:touch?0:1,grain:1,vname:''};
@@ -140,6 +142,7 @@ const cam=new THREE.PerspectiveCamera(75,innerWidth/innerHeight,.05,100);cam.rot
 const amb=new THREE.AmbientLight(0x8890b8,.3),fill=new THREE.PointLight(0xffeedd,.45,9),spot=new THREE.SpotLight(0xfff0d8,2.4,32,.62,.55,1.2);
 spot.shadow.mapSize.set(1024,1024);spot.shadow.camera.near=.3;spot.shadow.camera.far=30;spot.shadow.bias=-.0006;
 cam.add(fill);cam.add(spot);spot.target.position.set(0,0,-1);cam.add(spot.target);scene.add(amb);
+const monL=new THREE.PointLight(0x6aa8ff,0,6);scene.add(monL);
 function apply(){R.setPixelRatio(CFG.hq?Math.min(devicePixelRatio,touch?1.5:2):.75);R.setSize(innerWidth,innerHeight);R.toneMappingExposure=.95*CFG.bright;
  const sh=!!CFG.shadows;if(R.shadowMap.enabled!==sh){R.shadowMap.enabled=sh;scene.traverse(o=>{if(o.material)[].concat(o.material).forEach(m=>m.needsUpdate=true)})}spot.castShadow=sh;
  $('grain').style.display=$('vg').style.display=CFG.grain?'block':'none';saveCfg()}
@@ -149,7 +152,7 @@ addEventListener('resize',()=>{R.setSize(innerWidth,innerHeight);cam.aspect=inne
 const S={tape:null,paper:0,key:0,blue:0,green:0,light:0,hands:0,circuit:0,plush:0,chase:0,dead:0,lurk:0,spd:0,jt:0,jd:[0,1],kd:0,
  code:[0,0,0,0].map(()=>['red','green','blue','yellow'][rnd()*4|0])};
 const solids=[],ints=[],grabs=[],anim=[],doors={},zones=[],strips=[],toys=[],lamps=[],mobs=[],hangs=[],rooms=[];
-let started=0,ui=0,px=0,pz=-2,yaw=0,pitch=0,ent=[],bt=0,jy=0,vy=0,jump=0,cr=0,ch=1.7,gyS=0,blk=0,fk=0,flashOn=1,tt=0,fs=0,lt=0,ni=0,stp=0,held=-1,fire=null,G=scene,gf=0,hb=0,everLocked=0,taping=0,ttsOK=null,sayId=0;
+let started=0,ui=0,px=0,pz=-2,yaw=0,pitch=0,ent=[],bt=0,jy=0,vy=0,jump=0,cr=0,ch=1.7,gyS=0,blk=0,fk=0,flashOn=1,tt=0,fs=0,lt=0,ni=0,stp=0,held=-1,fire=null,G=scene,gf=0,hb=0,everLocked=0,taping=0,ttsOK=null,sayId=0,curMon=null;
 const keys={},locked=()=>touch?!!started:document.pointerLockElement===R.domElement;
 const na=a=>((a+PI)%(2*PI)+2*PI)%(2*PI)-PI;
 
@@ -179,12 +182,13 @@ function hiss(on){try{if(on&&!hs){const a=A(),s=a.createBufferSource(),g=a.creat
 function drone(){try{const a=A();DG=a.createGain();DG.gain.value=.5*CFG.vol;DG.connect(a.destination);[[55,.05],[58.3,.05],[110.4,.015],[41.2,.06]].forEach(([f,v],i)=>{const o=a.createOscillator(),g=a.createGain();o.type=i==2?'triangle':'sine';o.frequency.value=f;g.gain.value=v;o.connect(g);g.connect(DG);o.start()})}catch(e){}}
 const MEL=[659,587,523,587,659,659,659,587,587,587,659,784,784];
 
-/* ---------- voices (speech + backup talk-box voice) ---------- */
+/* ---------- voices (speech + backup talk-box voice + children's chorus) ---------- */
 let VO=[];function loadV(){try{VO=speechSynthesis.getVoices().filter(v=>/^en/i.test(v.lang))}catch(e){}}
 loadV();try{speechSynthesis.onvoiceschanged=loadV}catch(e){}
 function pickV(){if(CFG.vname){const v=VO.find(v=>v.name==CFG.vname);if(v)return v}
  const P=[/Google UK English Male/i,/Daniel/i,/Microsoft (Guy|Mark|David|Ryan|Christopher|Eric|George|Roger)/i,/\b(Alex|Fred|Aaron|Arthur|Reed|Rishi|Thomas|Oliver|Ralph|Albert|Gordon|James|Lee)\b/i,/en-(us|gb)-x-(iom|iol|rjs|gbb|gbd|tpd)/i,/male/i];
  for(const p of P){const v=VO.find(v=>p.test(v.name)&&!/female/i.test(v.name));if(v)return v}return VO.find(v=>/en[-_](US|GB)/i.test(v.lang))||VO[0]||null}
+function pickKid(){return VO.find(v=>/samantha|zira|karen|susan|female|google us english|victoria|moira|tessa/i.test(v.name))||pickV()}
 const VOW=[[730,1090],[530,1840],[270,2290],[570,840],[300,870]];
 function babble(t){const a=A(),w=t.split(/\s+/);let tm=a.currentTime+.05;
  w.forEach((x,i)=>{const d=.11+x.length*.04,f0=100+Math.sin(i*1.7)*14+(/[?]/.test(x)?18:0),o=a.createOscillator(),g=a.createGain(),b1=a.createBiquadFilter(),b2=a.createBiquadFilter(),v=VOW[(x.charCodeAt(0)+i)%5];
@@ -192,6 +196,24 @@ function babble(t){const a=A(),w=t.split(/\s+/);let tm=a.currentTime+.05;
   g.gain.setValueAtTime(0,tm);g.gain.linearRampToValueAtTime(.9*CFG.vol,tm+.03);g.gain.linearRampToValueAtTime(0,tm+d);
   o.connect(b1);o.connect(b2);b1.connect(g);b2.connect(g);g.connect(a.destination);o.start(tm);o.stop(tm+d+.03);tm+=d+.07});
  return tm-a.currentTime}
+/* group of 8 kids chanting "What's the time? ... STORYTIME!" (formant choir) */
+function kids(){const a=A(),t0=a.currentTime+.08,out=a.createGain(),cp=a.createDynamicsCompressor();out.gain.value=.3*CFG.vol;out.connect(cp);cp.connect(a.destination);
+ /* [f1 start,f2 start,f1 end,f2 end,start time,duration,pitch start,pitch end,loudness] */
+ const SY=[[700,1100,640,1250,0,.3,330,330,1],[520,1500,480,1600,.32,.12,320,310,.8],[820,1250,330,2250,.46,.55,330,420,1.1],
+  [520,880,480,950,1.5,.38,420,400,1.1],[340,2200,320,2300,1.9,.22,380,350,1],[820,1250,330,2250,2.14,.95,350,430,1.5]];
+ for(let v=0;v<8;v++){const f=.8+rnd()*.5,ff=.95+rnd()*.3,off=rnd()*.06,vib=a.createOscillator(),vg=a.createGain();vib.frequency.value=5+rnd()*2;vg.gain.value=4+rnd()*5;vib.connect(vg);vib.start(t0);vib.stop(t0+3.5);
+  SY.forEach(s=>{const a1=s[0],a2=s[1],b1=s[2],b2=s[3],ts=t0+s[4]+off+(rnd()-.5)*.03,d=s[5],g=s[8],o=a.createOscillator(),e=a.createGain(),f1=a.createBiquadFilter(),f2=a.createBiquadFilter();
+   o.type='sawtooth';o.frequency.setValueAtTime(s[6]*f,ts);o.frequency.linearRampToValueAtTime(s[7]*f,ts+d);vg.connect(o.frequency);
+   f1.type=f2.type='bandpass';f1.Q.value=f2.Q.value=6;f1.frequency.setValueAtTime(a1*ff,ts);f1.frequency.linearRampToValueAtTime(b1*ff,ts+d);f2.frequency.setValueAtTime(a2*ff,ts);f2.frequency.linearRampToValueAtTime(b2*ff,ts+d);
+   e.gain.setValueAtTime(0,ts);e.gain.linearRampToValueAtTime(g*.9,ts+.04);e.gain.setValueAtTime(g*.9,ts+d*.7);e.gain.linearRampToValueAtTime(0,ts+d+.05);
+   o.connect(f1);o.connect(f2);f1.connect(e);f2.connect(e);e.connect(out);o.start(ts);o.stop(ts+d+.1)})}
+ return 3.3}
+function kidsSpeak(done,alive){let fin=0;const end=()=>{if(!fin){fin=1;done()}};
+ if(!CFG.voice||CFG.vol<=0){setTimeout(end,3200);return}
+ let d=3.3;try{d=kids()}catch(e){}
+ try{if(window.speechSynthesis&&ttsOK!==false){const ss=speechSynthesis;ss.cancel();setTimeout(()=>{if(fin||!(alive&&alive()))return;const u=new SpeechSynthesisUtterance("What's the time? Story time!"),v=pickKid();
+  if(v){u.voice=v;u.lang=v.lang}else u.lang='en-US';u.pitch=2;u.rate=1.05;u.volume=.55*CFG.vol;ss.speak(u)},120)}}catch(e){}
+ setTimeout(end,d*1000+600)}
 function speak(l,done,alive){let fin=0,fb=0;const ok=()=>!alive||alive(),end=()=>{if(!fin){fin=1;done()}};
  const bab=()=>{if(fin||fb||!ok())return;fb=1;try{const d=babble(l);setTimeout(end,d*1000+500)}catch(e){setTimeout(end,2500+l.length*60)}};
  if(!CFG.voice||CFG.vol<=0){setTimeout(end,1400+l.length*62);return}
@@ -205,8 +227,10 @@ function speak(l,done,alive){let fin=0,fb=0;const ok=()=>!alive||alive(),end=()=
    setTimeout(()=>{if(!st&&!fin&&ok()){try{ss.cancel()}catch(e){}ttsOK=false;bab()}},3000);
    setTimeout(()=>{if(!fin&&ok()){try{ss.cancel()}catch(e){}end()}},6000+l.length*170)},90)
  }catch(e){bab()}}
+/* a line starting with ~ is chanted by the children's chorus */
 function say(L,cb,on){const id=++sayId;let i=0;const alive=()=>id===sayId;(function n(){if(!alive())return;if(i>=L.length){$('sub').style.display='none';cb&&cb();return}
- const l=L[i],ix=i++;on&&on(ix);const s=$('sub');s.textContent=l;s.style.display=CFG.subs?'block':'none';speak(l,()=>setTimeout(n,200),alive)})()}
+ const l=L[i],ix=i++,kid=l[0]=='~',tx=kid?l.slice(1):l;on&&on(ix);const s=$('sub');s.textContent=tx;s.style.display=CFG.subs?'block':'none';
+ if(kid)kidsSpeak(()=>setTimeout(n,200),alive);else speak(tx,()=>setTimeout(n,200),alive)})()}
 function unlockSpeech(){try{const u=new SpeechSynthesisUtterance('.');u.volume=0;speechSynthesis.speak(u)}catch(e){}}
 
 const ROWS=[['sens','Look sensitivity','r',.3,2.5,.05],['fov','Field of view','r',60,100,1],['bright','Brightness','r',.5,2,.05],['vol','Volume','r',0,1,.05],['voice','Tape voices','c'],['subs','Subtitles','c'],['bob','Head bob','c'],['hq','High quality graphics','c'],['shadows','Shadows (strong device)','c'],['grain','Film grain & vignette','c']];
@@ -217,7 +241,9 @@ function buildSets(){loadV();const b=$('rows');b.innerHTML='';ROWS.forEach(([k,l
  const o0=document.createElement('option');o0.value='';o0.textContent='Auto (best male)';sel.append(o0);VO.forEach(v=>{const o=document.createElement('option');o.value=v.name;o.textContent=v.name;sel.append(o)});
  sel.value=CFG.vname||'';sel.onchange=()=>{CFG.vname=sel.value;saveCfg()};vr.append(sel);b.append(vr);
  const tb=document.createElement('div');tb.style.textAlign='center';const t2=document.createElement('button');t2.textContent='\u25B6 Test voice';t2.style.cssText='background:#555;color:#fff;font-size:14px;padding:7px 16px';
- t2.onclick=()=>{ttsOK=null;unlockSpeech();speak('Welcome to Brothers Playtime Company. Please enjoy your stay.',()=>{})};tb.append(t2);b.append(tb)}
+ t2.onclick=()=>{ttsOK=null;unlockSpeech();speak('Welcome to Brothers Playtime Company. Please enjoy your stay.',()=>{})};
+ const t3=document.createElement('button');t3.textContent='\u25B6 Test kids';t3.style.cssText='background:#555;color:#fff;font-size:14px;padding:7px 16px;margin-left:6px';t3.onclick=()=>{unlockSpeech();kidsSpeak(()=>{})};
+ tb.append(t2,t3);b.append(tb)}
 function openSet(){buildSets();if(started){ui=1;unlock()}$('paused').style.display='none';$('set').style.display='flex'}
 function closeSet(){saveCfg();$('set').style.display='none';if(started){ui=$('keypad').style.display=='block'?1:0;if(!ui)lock()}}
 function updPause(){$('paused').style.display=(started&&!ui&&!touch&&everLocked&&!locked()&&!S.dead)?'flex':'none'}
@@ -237,8 +263,43 @@ function openDoor(i){const d=doors[i];if(!d||d.userData.open)return;d.userData.o
  anim.push(dt=>{d.position.y+=dt*2.2;if(d.position.y>6){d.visible=false;return 1}})}
 function table(x,z){return box(x,.5,z,2.4,1,1.2,0x5a3a1a,1)}
 function tapeItem(x,z,id){table(x,z);const m=fl(box(x-.5,1.08,z,.35,.12,.25,0x111111,0,0x550000));addInt(m,'Take tape',()=>{S.tape=id;m.visible=false;inv();beep(500,.1,'square',.1);msg('Picked up a tape')})}
-function player(x,z){table(x,z);const m=box(x,1.2,z,.9,.4,.6,0x888890,0,0x111111);
- addInt(m,()=>taping?'Tape is playing...':S.tape?'Put tape in tape player':'Tape player (need a tape)',()=>{if(taping)return msg('A tape is already playing.');if(!S.tape)return msg('You need a tape.');const t=S.tape;S.tape=null;inv();unlockSpeech();playTape(t)})}
+
+/* ---------- tape player + video monitor ---------- */
+const mimg=document.createElement('canvas').getContext('2d').createImageData(192,144);
+function mhand(c,x,y,col){c.fillStyle=col;c.fillRect(x-14,y-8,28,22);for(let i=0;i<4;i++)c.fillRect(x-14+i*7,y-24,5,17);c.fillRect(x-22,y-4,8,6)}
+function mtext(c,s,x,y,sz,col,st){c.font='bold '+sz+'px Arial';c.lineWidth=3;c.strokeStyle=st||'#000';c.strokeText(s,x,y);c.fillStyle=col;c.fillText(s,x,y)}
+function monDraw(m,t){const c=m.cx,W=192,H=144;c.textAlign='center';
+ if(m.mode=='off'){c.fillStyle='#03070c';c.fillRect(0,0,W,H);c.fillStyle='#4a8cff';c.font='bold 14px monospace';c.fillText('INSERT TAPE',W/2,H/2+4);c.fillStyle='rgba(0,0,0,.25)';for(let y=0;y<H;y+=2)c.fillRect(0,y,W,1);return}
+ if(m.mode=='end'){const d=mimg.data;for(let i=0;i<d.length;i+=4){d[i]=d[i+1]=d[i+2]=rnd()*255;d[i+3]=255}c.putImageData(mimg,0,0);return}
+ const lt=t-m.t0,id=m.tid,li=m.li;c.fillStyle='#000';c.fillRect(0,0,W,H);
+ if(id=='t1'){
+  if(li==0){c.fillStyle='#e07000';c.fillRect(0,0,W,H);for(let i=0;i<14;i++){c.fillStyle=i%2?'#ff9b1a':'#d85f00';c.beginPath();c.moveTo(96,72);const a=i/14*6.283+lt*.4,b=(i+1)/14*6.283+lt*.4;c.lineTo(96+Math.cos(a)*220,72+Math.sin(a)*220);c.lineTo(96+Math.cos(b)*220,72+Math.sin(b)*220);c.fill()}mtext(c,'BROTHERS',96,62,26,'#fff','#600');mtext(c,'PLAYTIME CO.',96,92,22,'#fff','#600')}
+  else if(li==1){const g=c.createLinearGradient(0,0,0,H);g.addColorStop(0,'#58b8f0');g.addColorStop(1,'#bfe6ff');c.fillStyle=g;c.fillRect(0,0,W,H);c.fillStyle='#7c5';c.fillRect(0,100,W,44);for(let i=0;i<5;i++){const x=22+i*37,y=92-Math.abs(Math.sin(lt*3+i))*40;c.fillStyle=['#e33','#fd2','#3b5','#a3d','#f80'][i];if(i%2)c.fillRect(x-9,y-9,18,18);else{c.beginPath();c.arc(x,y,10,0,6.283);c.fill()}}mtext(c,'WE MAKE FRIENDS!',96,26,15,'#fff','#046')}
+  else if(li==2){c.fillStyle='#1a2236';c.fillRect(0,0,W,H);mtext(c,'FIND YOUR',96,30,18,'#fff');mtext(c,'COLOR CODE',96,52,18,'#ffd21f');['#e22','#2c4','#26f','#fd2'].forEach((col,i)=>{c.fillStyle=Math.sin(lt*4+i)>0?col:'#333';c.fillRect(20+i*38,76,30,30);c.fillStyle='#000';c.font='bold 18px Arial';c.fillText('?',35+i*38,98)})}
+  else{c.fillStyle='#120808';c.fillRect(0,0,W,H);c.font='bold 60px Arial';c.fillStyle='rgba(255,200,120,'+(.5+.4*Math.sin(lt*6))+')';c.fillText('\u266A',96+Math.sin(lt*3)*20,84);mtext(c,'DO NOT FOLLOW',96,30,16,'#d00');mtext(c,'THE MUSIC BOX',96,120,15,'#d00')}
+ }else if(id=='t2'){
+  if(li==0){c.fillStyle='#10213a';c.fillRect(0,0,W,H);mhand(c,60,80,'#2a62ff');mhand(c,132,80,'#22bb44');mtext(c,'G B G P',96,28,22,'#ffd21f');mtext(c,'GRAB PACK',96,124,14,'#fff')}
+  else if(li==1){c.fillStyle='#101a2a';c.fillRect(0,0,W,H);const e=Math.abs(Math.sin(lt*1.5))*100;c.strokeStyle='#3377ff';c.lineWidth=3;c.beginPath();c.moveTo(30,80);c.lineTo(44+e,80);c.stroke();mhand(c,30,80,'#2a62ff');mhand(c,44+e,80,'#2a62ff');c.fillStyle='#555';c.fillRect(172,60,14,40);mtext(c,'FIRE  RETRACT  GRIP',96,26,13,'#fff')}
+  else if(li==2){c.fillStyle='#2a0808';c.fillRect(0,0,W,H);c.strokeStyle='#ddd';c.lineWidth=4;c.beginPath();c.arc(96,44,9,0,6.283);c.moveTo(96,53);c.lineTo(96,86);c.moveTo(78,64);c.lineTo(114,64);c.moveTo(96,86);c.lineTo(82,112);c.moveTo(96,86);c.lineTo(110,112);c.stroke();c.strokeStyle='#e22';c.lineWidth=7;c.beginPath();c.arc(96,76,50,0,6.283);c.moveTo(62,40);c.lineTo(130,112);c.stroke();mtext(c,'DO NOT',96,18,16,'#e22')}
+  else if(li==3){c.fillStyle='#0c1a10';c.fillRect(0,0,W,H);c.strokeStyle='#ffd21f';c.lineWidth=4;c.beginPath();c.moveTo(10,80);for(let x=10;x<=182;x+=12)c.lineTo(x,80+((x/12|0)%2?-12:12));c.stroke();if(Math.sin(lt*20)>0){c.fillStyle='#fff';c.beginPath();c.arc(10+(lt*60)%170,80,5,0,6.283);c.fill()}mtext(c,'WIRE IS',96,28,16,'#fff');mtext(c,'CONDUCTIVE',96,128,16,'#ffd21f')}
+  else{c.fillStyle='#ffd23a';c.fillRect(0,0,W,H);c.fillStyle='#ff9a1a';c.beginPath();c.arc(96,70,26,0,6.283);c.fill();c.fillStyle='#111';c.fillRect(86,62,5,8);c.fillRect(101,62,5,8);c.strokeStyle='#111';c.lineWidth=3;c.beginPath();c.arc(96,72,13,.2,2.9);c.stroke();
+   mtext(c,'STORYTIME!',96+Math.sin(lt*14)*3,26,24,'#fff','#a30');for(let i=0;i<6;i++){const x=20+i*30,y=124-Math.abs(Math.sin(lt*7+i))*14;c.fillStyle=['#e33','#3b5','#26f','#a3d','#f80','#fff'][i];c.beginPath();c.arc(x,y,9,0,6.283);c.fill();c.fillRect(x-7,y+9,14,12)}}
+ }else{
+  if(li==0){c.fillStyle='#10213a';c.fillRect(0,0,W,H);mhand(c,60,82,'#2a62ff');mhand(c,132,82,'#22bb44');mtext(c,'BLUE + GREEN',96,28,18,'#ffd21f')}
+  else if(li==1){c.fillStyle='#1a1d22';c.fillRect(0,0,W,H);c.strokeStyle='#333';c.lineWidth=1;for(let i=0;i<W;i+=16){c.beginPath();c.moveTo(i,0);c.lineTo(i,H);c.moveTo(0,i);c.lineTo(W,i);c.stroke()}c.fillStyle='#fc0';const ax=40+(lt*50)%100;c.beginPath();c.moveTo(ax,60);c.lineTo(ax+40,80);c.lineTo(ax,100);c.fill();mtext(c,'THE VENTS',96,28,20,'#fff')}
+  else{c.fillStyle='#000';c.fillRect(0,0,W,H);c.fillStyle='#ddd';c.beginPath();c.ellipse(96,70,50,28,0,0,6.283);c.fill();c.fillStyle='#d00';c.beginPath();c.arc(96+Math.sin(lt*2)*14,70,18,0,6.283);c.fill();c.fillStyle='#000';c.beginPath();c.arc(96+Math.sin(lt*2)*14,70,8,0,6.283);c.fill();mtext(c,'DO NOT LOOK BACK',96,128,14,Math.sin(lt*25)>0?'#d00':'#fff')}}
+ c.fillStyle='rgba(0,0,0,.22)';for(let y=0;y<H;y+=2)c.fillRect(0,y,W,1);c.fillStyle='rgba(255,255,255,.5)';for(let i=0;i<30;i++)c.fillRect(rnd()*W,rnd()*H,1+rnd()*2,1);
+ const by=(lt*50)%(H+30)-15;c.fillStyle='rgba(255,255,255,.08)';c.fillRect(0,by,W,10);
+ c.textAlign='left';c.font='bold 9px monospace';c.fillStyle='#f33';c.fillText('PLAY \u25B6',6,12);c.fillStyle='#fff';c.fillText(fmtT(581+(lt|0)),W-58,H-6)}
+function mkMon(x,z,pl){const cv=document.createElement('canvas');cv.width=192;cv.height=144;const m={cv,cx:cv.getContext('2d'),mode:'off',tid:null,li:0,t0:0,pl,x,z};
+ monDraw(m,0);m.tx=new THREE.CanvasTexture(cv);m.tx.encoding=THREE.sRGBEncoding;
+ box(x,1.47,z,.6,.1,.45,0x1a1a1e);m.body=box(x,1.8,z,.84,.62,.6,0x34343a);box(x,1.8,z+.3,.7,.5,.02,0x0e0e10);
+ mk(new THREE.PlaneGeometry(.6,.44),new THREE.MeshBasicMaterial({map:m.tx}),x,1.8,z+.312);
+ box(x+.33,1.56,z+.31,.04,.04,.02,0xff2222,0,0xff0000);box(x,1.2,z+.305,.6,.06,.02,0x000000);box(x-.32,1.32,z+.31,.04,.04,.02,0x22ff44,0,0x00ff44);return m}
+function player(x,z){table(x,z);const m=box(x,1.2,z,.9,.4,.6,0x888890,0,0x111111),mn=mkMon(x,z,m);
+ const lab=()=>taping?'Tape is playing...':S.tape?'Put tape in tape player':'Tape player (need a tape)',
+  act=()=>{if(taping)return msg('A tape is already playing.');if(!S.tape)return msg('You need a tape.');const t=S.tape;S.tape=null;inv();unlockSpeech();playTape(t,mn)};
+ addInt(m,lab,act);addInt(mn.body,lab,act)}
 function socket(x,y,z,ry,type,fn){const m=box(x,y,z,.6,.6,.25,0x222222,0,type=='blue'?0x1144ff:0x11bb33);m.rotation.y=ry;grabs.push({m,type,fn,done:0});
  label(type=='blue'?'BLUE':'GREEN',.6,.25,'#fff',null,x+Math.sin(ry)*.15,y+.5,z+Math.cos(ry)*.15,ry,60);return m}
 const obj=t=>$('obj').textContent='Objective: '+t;
@@ -250,13 +311,16 @@ function inv(){const ic={red:'\u{1F534}',green:'\u{1F7E2}',blue:'\u{1F535}',yell
 const T={
 t0:["Hello, and welcome to Brothers Playtime Company!","Since nineteen sixty-four, we have been making toys that bring joy to children everywhere.","And today, we are proud to introduce our newest friend... Sunny!","He is soft, he is smiling, and he is always ready to play. Our best selling toy yet.","Sunny... just wants to play.","Please... do not keep him waiting."],
 t1:["Hello, employee, and welcome to Brothers Playtime Company.","Here, we do not just make toys. We make friends.","Please look around the factory, and find your color code. It will open the way forward.","And a word of advice... if you hear a music box, do not follow it."],
-t2:["Employee, this is the Green and Blue Grab Pack, the G B G P.","We pull the trigger to fire. Pull again to retract. Hold to grip onto an object.","Do NOT do it to a worker. It may cause injury.","The wire is conductive. Use it for wiring.","What's the time...? Storytime!"],
+t2:["Employee, this is the Green and Blue Grab Pack, the G B G P.","We pull the trigger to fire. Pull again to retract. Hold to grip onto an object.","Do NOT do it to a worker. It may cause injury.","The wire is conductive. Use it for wiring.","~(Children) What's the time...? STORYTIME!"],
 t3:["Employee, you have done well with the blue hand.","Now take the green hand too. Together they can complete any circuit.","The vents are the only way forward. Do not look back."]};
-function playTape(id){taping=1;ttsOK=null;obj('Listening to the tape...');hiss(1);say(T[id],()=>{hiss(0);taping=0;
+function playTape(id,mn){taping=1;ttsOK=null;obj('Listening to the tape...');hiss(1);
+ if(mn){mn.mode='play';mn.tid=id;mn.li=0;mn.t0=tt;curMon=mn;monL.position.set(mn.x,1.9,mn.z+.9);monL.intensity=.9;mn.pl.material.emissive.set(0x0a3a0a)}
+ say(T[id],()=>{hiss(0);taping=0;
+ if(mn){mn.mode='end';setTimeout(()=>{mn.mode='off';monDraw(mn,tt);mn.tx.needsUpdate=true;monL.intensity=0;if(curMon===mn)curMon=null;mn.pl.material.emissive.set(0x111111)},1300)}
  if(id=='t1')obj('Explore the factory. Find the color code paper and the keypad.');
  if(id=='t2'){shatter();glass.visible=false;const k=solids.indexOf(glass);if(k>=0)solids.splice(k,1);packM.visible=false;S.blue=1;vm.blue.visible=true;inv();blk=1.6;
   setTimeout(()=>lurk(0,-14.5,3.2),1900);msg('You got the BLUE Grab Pack! ('+BL+')');obj('Power the door: use the BLUE hand ('+BL+') on the glowing blue socket on the right wall.')}
- if(id=='t3'){S.green=1;vm.green.visible=true;inv();msg('You got the GREEN Grab Pack! ('+GR+')');obj('Grab both hand scanners by the stairway door: Blue ('+BL+') and Green ('+GR+').')}})}
+ if(id=='t3'){S.green=1;vm.green.visible=true;inv();msg('You got the GREEN Grab Pack! ('+GR+')');obj('Grab both hand scanners by the stairway door: Blue ('+BL+') and Green ('+GR+').')}},i=>{if(mn)mn.li=i})}
 
 /* ---------- textures & materials ---------- */
 function tex(w,draw,rx,ry,lin){const c=document.createElement('canvas');c.width=c.height=w;draw(c.getContext('2d'),w);const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(rx||1,ry||1);t.anisotropy=touch?2:8;if(!lin)t.encoding=THREE.sRGBEncoding;return t}
@@ -485,7 +549,7 @@ function vpost(t,gl,sc){vx.fillStyle='rgba(0,0,0,.2)';for(let y=0;y<VH;y+=2)vx.f
  const by=(t*70)%(VH+40)-20;vx.drawImage(vc,0,by,VW,16,rnd()*14-7,by,VW,16);if(gl>0&&rnd()<.3*gl+.05){const y=rnd()*VH;vx.drawImage(vc,0,y,VW,10+rnd()*20,rnd()*40-20,y,VW,20)}
  vx.globalAlpha=.22;vx.drawImage(vc,3,0);vx.globalAlpha=1;vx.fillStyle='rgba(255,255,255,.5)';for(let i=0;i<50;i++)vx.fillRect(rnd()*VW,rnd()*VH,1+rnd()*2,1);
  if(gl>0){vx.fillStyle='rgba(10,20,40,'+(.25*gl)+')';vx.fillRect(0,0,VW,VH)}
- vx.font='bold 13px monospace';vx.textAlign='left';[['#f22',1],['#fff',0]].forEach(([c,o])=>{vx.fillStyle=c;vx.fillText(sc=='static'?'':'PLAY \u25B6',10+o,18);vx.fillText('SEP 14 1986',10+o,VH-12);vx.fillText(('0'+(9+(t/60|0))).slice(-2)+':'+('0'+(41+(t|0)%60)).slice(-2)+' AM',VW-84+o,VH-12)})}
+ vx.font='bold 13px monospace';vx.textAlign='left';[['#f22',1],['#fff',0]].forEach(([c,o])=>{vx.fillStyle=c;vx.fillText(sc=='static'?'':'PLAY \u25B6',10+o,18);vx.fillText('SEP 14 1986',10+o,VH-12);vx.fillText(fmtT(581+(t|0)),VW-84+o,VH-12)})}
 let vsk=null;
 function vhs(cb){const w=$('vhsw');w.style.display='block';hiss(1);let sc='bars',st=0,gl=0,stop=0;const T0=performance.now();
  const fin=()=>{if(stop)return;stop=1;sayId++;try{speechSynthesis.cancel()}catch(e){}hiss(0);w.style.display='none';$('sub').style.display='none';cb()};vsk=fin;
@@ -575,7 +639,7 @@ function tick(){requestAnimationFrame(tick);const dt=Math.min(clock.getDelta(),.
    stalk.position.x+=dx/d*.7*dt;stalk.position.z+=dz/d*.7*dt;L.t-=dt;k=Math.max(k,.55*Math.max(0,1-d/18));
    if(L.t<=0||d<L.vd){stalk.visible=false;S.lurk=0;fk=.9;noise(.5,.4,1500,'highpass');beep(150,.4,'sawtooth',.25,40)}}}
  /* JUMPSCARE */
- if(S.dead){S.jt+=dt;const jt=S.jt,u=sunny.userData,d=2.1+2.8*Math.exp(-jt*20),sh=Math.max(0,1.5-jt)*.12;k=1;
+ if(S.dead){S.jt+=dt;const jt=S.jt,u=sunny.userData,d=2.1+2.8*Math.exp(-jt*20);k=1;
   sunny.position.set(px+S.jd[0]*d+(rnd()-.5)*.06,.3,pz+S.jd[1]*d+(rnd()-.5)*.06);sunny.rotation.set(0,Math.atan2(-S.jd[0],-S.jd[1]),0);
   u.head.scale.setScalar(1+.3*Math.min(1,jt*6)+Math.sin(jt*60)*.04);
   $('flash').style.opacity=jt<.45?(rnd()<.5?(rnd()<.5?1:.55):0):0;
@@ -590,6 +654,8 @@ function tick(){requestAnimationFrame(tick);const dt=Math.min(clock.getDelta(),.
  spot.intensity=S.dead?3:(flashOn&&!dk&&!fv?2.4:0);amb.intensity=dk?.02:(.3*CFG.bright);fill.intensity=dk?0:.45;
  scene.fog.color.setRGB(.03+k*.15*(.5+.5*Math.sin(tt*8)),.03,.045);scene.background.copy(scene.fog.color);
  if(DG)DG.gain.value=S.dead?0:CFG.vol*(.5+k*1.2);$('hurt').style.opacity=Math.min(1,k*.9);
+ /* video monitor on the tape player */
+ if(curMon){if(gf%2==0){monDraw(curMon,tt);curMon.tx.needsUpdate=true}monL.intensity=curMon.mode=='play'?.6+rnd()*.5:.4}
  /* camera */
  bt+=dt*(mv&&jy==0?(run?13:crouch?5:9):0);cam.fov+=((mv&&run?CFG.fov+7:S.dead?CFG.fov+14:CFG.fov)-cam.fov)*dt*5;cam.updateProjectionMatrix();
  const sb=Math.sin(bt);if(mv&&jy==0&&sb<-.95&&!fs){fs=1;step(crouch?.05:.12)}else if(sb>0)fs=0;
