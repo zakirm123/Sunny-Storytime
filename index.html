@@ -14,7 +14,7 @@ button{background:#ffd21f;border:0;padding:12px 36px;font-size:20px;font-weight:
 #fx{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
 .wrap{position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:8px;overflow:auto;animation:fl 5s infinite}
 @keyframes fl{0%,90%,100%{filter:none}92%{filter:brightness(.25)}94%{filter:brightness(1.5)}96%{filter:brightness(.6)}}
-#face{width:min(32vh,250px);height:auto;filter:drop-shadow(0 0 25px #f90);animation:bob 3s ease-in-out infinite}
+#face{width:min(28vh,230px);height:auto;filter:drop-shadow(0 0 25px #f90);animation:bob 3s ease-in-out infinite}
 @keyframes bob{50%{transform:translateY(-10px) rotate(1.5deg)}}
 .pupil{animation:pu 1.6s ease-in-out infinite}
 @keyframes pu{50%{opacity:.35}}
@@ -56,13 +56,22 @@ button{background:#ffd21f;border:0;padding:12px 36px;font-size:20px;font-weight:
 /* settings */
 #gear{position:fixed;top:8px;left:50%;transform:translateX(-50%);z-index:4;width:44px;height:36px;padding:0;font-size:20px;background:#0008;color:#fff;border:1px solid #fff5;display:none}
 #set{position:fixed;inset:0;background:#000c;z-index:14;display:none;align-items:center;justify-content:center}
-.panel{background:#1b1308;border:3px solid #ffd21f;border-radius:14px;padding:14px 20px;width:min(440px,92vw);max-height:90vh;overflow:auto;box-sizing:border-box}
+.panel{background:#1b1308;border:3px solid #ffd21f;border-radius:14px;padding:14px 20px;width:min(440px,92vw);max-height:90vh;overflow:auto;box-sizing:border-box;touch-action:pan-y}
 .panel h3{margin:0 0 6px;color:#ffd21f;letter-spacing:3px;text-align:center}
 .row{display:flex;align-items:center;gap:10px;margin:9px 0;font-size:16px}
 .row span{flex:1}.row input[type=range]{width:150px}.row b{width:42px;text-align:right;font-size:14px}
 .row input[type=checkbox]{width:24px;height:24px}
 .panel button{font-size:16px;padding:9px 22px}
 #paused{position:fixed;inset:0;background:#000b;z-index:9;display:none;flex-direction:column;align-items:center;justify-content:center;font-size:28px;letter-spacing:4px}
+/* characters list */
+#chars{position:fixed;inset:0;background:#000d;z-index:15;display:none;align-items:center;justify-content:center}
+.big{width:min(560px,94vw)}
+#clist{max-height:66vh;overflow:auto;touch-action:pan-y}
+.crow{display:flex;gap:14px;align-items:center;background:#241a0c;border:2px solid #5a4010;border-radius:12px;margin:10px 0;padding:8px}
+.crow canvas{width:120px;height:143px;flex:none;background:radial-gradient(#4a3510,#120c04);border-radius:8px}
+.crow h4{margin:0;color:#ffd21f;font-size:20px;letter-spacing:2px}
+.crow small{color:#fa5}
+.crow p{margin:5px 0 0;font-size:13px;color:#ddd;line-height:1.35}
 /* mobile */
 #tc{display:none}
 #joy{position:fixed;left:24px;bottom:28px;width:130px;height:130px;border-radius:50%;background:#fff2;border:2px solid #fff5;z-index:4}
@@ -93,7 +102,7 @@ button{background:#ffd21f;border:0;padding:12px 36px;font-size:20px;font-weight:
 </svg>
 <div class="tag">BROTHERS PLAYTIME CO. PRESENTS</div>
 <h1>SUNNY STORYTIME</h1><h2>CHAPTER 1: SUNNY'S TIME</h2>
-<div id="menu"><button class="mb" id="play">PLAY</button><button class="mb g" id="setb">SETTINGS</button></div>
+<div id="menu"><button class="mb" id="play">PLAY</button><button class="mb g" id="chb">CHARACTERS</button><button class="mb g" id="setb">SETTINGS</button></div>
 <div class="ft">PC: WASD move &bull; Shift run &bull; Space jump &bull; C crouch &bull; E interact &bull; F flashlight &bull; P settings<br>Left click = Blue hand &bull; Right click = Green hand<br>Mobile: joystick + drag screen to look + buttons<br>Founder: Zakir &bull; Co-Founder: Muawiya</div>
 </div></div>
 
@@ -104,9 +113,10 @@ button{background:#ffd21f;border:0;padding:12px 36px;font-size:20px;font-weight:
 <div class="o" id="prompt"></div><div class="o" id="sub"></div><div class="o" id="msg"></div>
 <button id="gear">&#9881;</button>
 <div id="dead"><span>SUNNY GOT YOU</span></div>
-<div id="paused"><div style="margin-bottom:14px">PAUSED</div><button class="mb" id="resume">RESUME</button><button class="mb g" id="pset">SETTINGS</button></div>
+<div id="paused"><div style="margin-bottom:14px">PAUSED</div><button class="mb" id="resume">RESUME</button><button class="mb g" id="pchb">CHARACTERS</button><button class="mb g" id="pset">SETTINGS</button></div>
 <div id="set"><div class="panel"><h3>SETTINGS</h3><div id="rows"></div>
-<div style="text-align:center;margin-top:12px"><button id="reset" style="background:#555;color:#fff">Reset</button> <button id="sclose">Close</button></div></div></div>
+<div style="text-align:center;margin-top:12px"><button id="reset" style="background:#555;color:#fff">Reset</button> <button id="schar" style="background:#555;color:#fff">Characters</button> <button id="sclose">Close</button></div></div></div>
+<div id="chars"><div class="panel big"><h3>CHARACTERS</h3><div id="clist"></div><div style="text-align:center;margin-top:10px"><button id="cclose">Close</button></div></div></div>
 <div id="tc">
 <div id="joy"><div id="knob"></div></div>
 <button class="tb" id="bE">USE</button><button class="tb" id="bB">BLUE</button><button class="tb" id="bG">GREEN</button><button class="tb" id="bJ">JUMP</button><button class="tb" id="bC">CROUCH</button><button class="tb" id="bF">LIGHT</button>
@@ -182,13 +192,16 @@ function hiss(on){try{if(on&&!hs){const a=A(),s=a.createBufferSource(),g=a.creat
 function drone(){try{const a=A();DG=a.createGain();DG.gain.value=.5*CFG.vol;DG.connect(a.destination);[[55,.05],[58.3,.05],[110.4,.015],[41.2,.06]].forEach(([f,v],i)=>{const o=a.createOscillator(),g=a.createGain();o.type=i==2?'triangle':'sine';o.frequency.value=f;g.gain.value=v;o.connect(g);g.connect(DG);o.start()})}catch(e){}}
 const MEL=[659,587,523,587,659,659,659,587,587,587,659,784,784];
 
-/* ---------- voices (speech + backup talk-box voice + children's chorus) ---------- */
+/* ---------- voices ---------- */
 let VO=[];function loadV(){try{VO=speechSynthesis.getVoices().filter(v=>/^en/i.test(v.lang))}catch(e){}}
 loadV();try{speechSynthesis.onvoiceschanged=loadV}catch(e){}
 function pickV(){if(CFG.vname){const v=VO.find(v=>v.name==CFG.vname);if(v)return v}
  const P=[/Google UK English Male/i,/Daniel/i,/Microsoft (Guy|Mark|David|Ryan|Christopher|Eric|George|Roger)/i,/\b(Alex|Fred|Aaron|Arthur|Reed|Rishi|Thomas|Oliver|Ralph|Albert|Gordon|James|Lee)\b/i,/en-(us|gb)-x-(iom|iol|rjs|gbb|gbd|tpd)/i,/male/i];
  for(const p of P){const v=VO.find(v=>p.test(v.name)&&!/female/i.test(v.name));if(v)return v}return VO.find(v=>/en[-_](US|GB)/i.test(v.lang))||VO[0]||null}
-function pickKid(){return VO.find(v=>/samantha|zira|karen|susan|female|google us english|victoria|moira|tessa/i.test(v.name))||pickV()}
+/* child-like voices: high-pitched female voices, a different one for each phrase */
+function pickKid(i){const a=VO.filter(v=>/samantha|zira|karen|susan|victoria|moira|tessa|fiona|hazel|catherine|google us english|female/i.test(v.name));return a.length?a[i%a.length]:(VO[0]||null)}
+/* optional: put a real recording named kids.mp3 next to index.html and the game uses it for the chant */
+let kidOK=0;const kidA=new Audio();kidA.preload='auto';kidA.addEventListener('canplaythrough',()=>{kidOK=1});kidA.addEventListener('error',()=>{kidOK=0});try{kidA.src='kids.mp3'}catch(e){}
 const VOW=[[730,1090],[530,1840],[270,2290],[570,840],[300,870]];
 function babble(t){const a=A(),w=t.split(/\s+/);let tm=a.currentTime+.05;
  w.forEach((x,i)=>{const d=.11+x.length*.04,f0=100+Math.sin(i*1.7)*14+(/[?]/.test(x)?18:0),o=a.createOscillator(),g=a.createGain(),b1=a.createBiquadFilter(),b2=a.createBiquadFilter(),v=VOW[(x.charCodeAt(0)+i)%5];
@@ -196,9 +209,8 @@ function babble(t){const a=A(),w=t.split(/\s+/);let tm=a.currentTime+.05;
   g.gain.setValueAtTime(0,tm);g.gain.linearRampToValueAtTime(.9*CFG.vol,tm+.03);g.gain.linearRampToValueAtTime(0,tm+d);
   o.connect(b1);o.connect(b2);b1.connect(g);b2.connect(g);g.connect(a.destination);o.start(tm);o.stop(tm+d+.03);tm+=d+.07});
  return tm-a.currentTime}
-/* group of 8 kids chanting "What's the time? ... STORYTIME!" (formant choir) */
-function kids(){const a=A(),t0=a.currentTime+.08,out=a.createGain(),cp=a.createDynamicsCompressor();out.gain.value=.3*CFG.vol;out.connect(cp);cp.connect(a.destination);
- /* [f1 start,f2 start,f1 end,f2 end,start time,duration,pitch start,pitch end,loudness] */
+/* backup chant (only used if the device has no speech voices at all): 8 formant "kids" */
+function kids(vol){const a=A(),t0=a.currentTime+.08,out=a.createGain(),cp=a.createDynamicsCompressor();out.gain.value=(vol||.3)*CFG.vol;out.connect(cp);cp.connect(a.destination);
  const SY=[[700,1100,640,1250,0,.3,330,330,1],[520,1500,480,1600,.32,.12,320,310,.8],[820,1250,330,2250,.46,.55,330,420,1.1],
   [520,880,480,950,1.5,.38,420,400,1.1],[340,2200,320,2300,1.9,.22,380,350,1],[820,1250,330,2250,2.14,.95,350,430,1.5]];
  for(let v=0;v<8;v++){const f=.8+rnd()*.5,ff=.95+rnd()*.3,off=rnd()*.06,vib=a.createOscillator(),vg=a.createGain();vib.frequency.value=5+rnd()*2;vg.gain.value=4+rnd()*5;vib.connect(vg);vib.start(t0);vib.stop(t0+3.5);
@@ -208,12 +220,23 @@ function kids(){const a=A(),t0=a.currentTime+.08,out=a.createGain(),cp=a.createD
    e.gain.setValueAtTime(0,ts);e.gain.linearRampToValueAtTime(g*.9,ts+.04);e.gain.setValueAtTime(g*.9,ts+d*.7);e.gain.linearRampToValueAtTime(0,ts+d+.05);
    o.connect(f1);o.connect(f2);f1.connect(e);f2.connect(e);e.connect(out);o.start(ts);o.stop(ts+d+.1)})}
  return 3.3}
-function kidsSpeak(done,alive){let fin=0;const end=()=>{if(!fin){fin=1;done()}};
- if(!CFG.voice||CFG.vol<=0){setTimeout(end,3200);return}
- let d=3.3;try{d=kids()}catch(e){}
- try{if(window.speechSynthesis&&ttsOK!==false){const ss=speechSynthesis;ss.cancel();setTimeout(()=>{if(fin||!(alive&&alive()))return;const u=new SpeechSynthesisUtterance("What's the time? Story time!"),v=pickKid();
-  if(v){u.voice=v;u.lang=v.lang}else u.lang='en-US';u.pitch=2;u.rate=1.05;u.volume=.55*CFG.vol;ss.speak(u)},120)}}catch(e){}
- setTimeout(end,d*1000+600)}
+/* crowd of kids sounds: quiet murmur before the chant + happy cheer after it */
+function crowd(){try{const a=A(),t=a.currentTime,s=a.createBufferSource(),f=a.createBiquadFilter(),g=a.createGain();s.buffer=nb;s.loop=true;f.type='bandpass';f.frequency.value=2300;f.Q.value=.7;
+ g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.045*CFG.vol,t+.3);g.gain.linearRampToValueAtTime(0,t+3);s.connect(f);f.connect(g);g.connect(a.destination);s.start(t);s.stop(t+3.1)}catch(e){}}
+function cheer(){for(let i=0;i<8;i++)setTimeout(()=>beep(700+rnd()*500,.28,'triangle',.05,1200+rnd()*600),i*70+rnd()*90);noise(.7,.07,3500,'highpass')}
+/* "What's the time?" "STORYTIME!" - clear spoken words in kid voices (or your own kids.mp3 recording) */
+function kidsSpeak(done,alive){let fin=0,fb=0;const end=()=>{if(!fin){fin=1;done()}},ok=()=>!alive||alive();
+ if(!CFG.voice||CFG.vol<=0){setTimeout(end,3000);return}
+ if(kidOK){try{kidA.currentTime=0;kidA.volume=Math.min(1,CFG.vol);kidA.onended=()=>setTimeout(end,300);const p=kidA.play();if(p&&p.catch)p.catch(()=>{kidOK=0;kidsSpeak(done,alive)});setTimeout(end,14000);return}catch(e){kidOK=0}}
+ const fall=()=>{if(fb||fin)return;fb=1;try{speechSynthesis.cancel()}catch(e){}try{kids(.5)}catch(e){}setTimeout(end,3900)};
+ if(!window.speechSynthesis||ttsOK===false){fall();return}
+ const ss=speechSynthesis;try{ss.cancel()}catch(e){}
+ const part=(txt,vi,pitch,rate,last,next)=>{if(fin||fb||!ok())return;const u=new SpeechSynthesisUtterance(txt),v=pickKid(vi);if(v){u.voice=v;u.lang=v.lang}else u.lang='en-US';u.pitch=pitch;u.rate=rate;u.volume=CFG.vol;let st=0;
+  u.onstart=()=>{st=1;ttsOK=true;if(last)cheer()};u.onend=()=>{if(last)setTimeout(end,600);else setTimeout(next,90)};
+  u.onerror=()=>{if(st){if(last)end();else next()}else{ttsOK=false;fall()}};
+  ss.speak(u);setTimeout(()=>{if(!st)fall()},3500)};
+ setTimeout(()=>{try{ss.resume()}catch(e){}crowd();part("What's the time?",0,2,1.02,0,()=>part("Story time!",1,2,.9,1))},120);
+ setTimeout(()=>{if(!fin)end()},9000)}
 function speak(l,done,alive){let fin=0,fb=0;const ok=()=>!alive||alive(),end=()=>{if(!fin){fin=1;done()}};
  const bab=()=>{if(fin||fb||!ok())return;fb=1;try{const d=babble(l);setTimeout(end,d*1000+500)}catch(e){setTimeout(end,2500+l.length*60)}};
  if(!CFG.voice||CFG.vol<=0){setTimeout(end,1400+l.length*62);return}
@@ -227,7 +250,7 @@ function speak(l,done,alive){let fin=0,fb=0;const ok=()=>!alive||alive(),end=()=
    setTimeout(()=>{if(!st&&!fin&&ok()){try{ss.cancel()}catch(e){}ttsOK=false;bab()}},3000);
    setTimeout(()=>{if(!fin&&ok()){try{ss.cancel()}catch(e){}end()}},6000+l.length*170)},90)
  }catch(e){bab()}}
-/* a line starting with ~ is chanted by the children's chorus */
+/* a line starting with ~ is chanted by the children */
 function say(L,cb,on){const id=++sayId;let i=0;const alive=()=>id===sayId;(function n(){if(!alive())return;if(i>=L.length){$('sub').style.display='none';cb&&cb();return}
  const l=L[i],ix=i++,kid=l[0]=='~',tx=kid?l.slice(1):l;on&&on(ix);const s=$('sub');s.textContent=tx;s.style.display=CFG.subs?'block':'none';
  if(kid)kidsSpeak(()=>setTimeout(n,200),alive);else speak(tx,()=>setTimeout(n,200),alive)})()}
@@ -242,7 +265,7 @@ function buildSets(){loadV();const b=$('rows');b.innerHTML='';ROWS.forEach(([k,l
  sel.value=CFG.vname||'';sel.onchange=()=>{CFG.vname=sel.value;saveCfg()};vr.append(sel);b.append(vr);
  const tb=document.createElement('div');tb.style.textAlign='center';const t2=document.createElement('button');t2.textContent='\u25B6 Test voice';t2.style.cssText='background:#555;color:#fff;font-size:14px;padding:7px 16px';
  t2.onclick=()=>{ttsOK=null;unlockSpeech();speak('Welcome to Brothers Playtime Company. Please enjoy your stay.',()=>{})};
- const t3=document.createElement('button');t3.textContent='\u25B6 Test kids';t3.style.cssText='background:#555;color:#fff;font-size:14px;padding:7px 16px;margin-left:6px';t3.onclick=()=>{unlockSpeech();kidsSpeak(()=>{})};
+ const t3=document.createElement('button');t3.textContent='\u25B6 Test kids';t3.style.cssText='background:#555;color:#fff;font-size:14px;padding:7px 16px;margin-left:6px';t3.onclick=()=>{ttsOK=null;unlockSpeech();kidsSpeak(()=>{})};
  tb.append(t2,t3);b.append(tb)}
 function openSet(){buildSets();if(started){ui=1;unlock()}$('paused').style.display='none';$('set').style.display='flex'}
 function closeSet(){saveCfg();$('set').style.display='none';if(started){ui=$('keypad').style.display=='block'?1:0;if(!ui)lock()}}
@@ -520,11 +543,66 @@ zones.push([-32.5,()=>{fk=.8;obj('Break the hand scanner (blue hand) and take th
 zones.push([-48.5,()=>obj('Power the light with the blue hand on the socket.')]);
 const gy=z=>z>-150?0:z<-156?-3:-(Math.floor((-150-z)/.75)+1)*.375;
 
-/* ---------- viewmodel hands ---------- */
-function glove(col){const g=new THREE.Group(),m=M(col,col&0x333333,{roughness:.6});mk(new THREE.BoxGeometry(.12,.06,.14),m,0,0,0,g);[-.04,-.013,.013,.04].forEach(x=>mk(new THREE.BoxGeometry(.022,.025,.1),m,x,0,.11,g));mk(new THREE.BoxGeometry(.05,.03,.07),m,-.075,0,.03,g).rotation.y=-.5;return g}
+/* ---------- grab pack hands (fingers point UP so the nails never hit the scanners) ---------- */
+function glove(col){const g=new THREE.Group(),i=new THREE.Group(),m=M(col,col&0x333333,{roughness:.6});i.rotation.x=-1.15;g.add(i);
+ mk(new THREE.BoxGeometry(.12,.06,.14),m,0,0,0,i);[-.04,-.013,.013,.04].forEach(x=>mk(new THREE.BoxGeometry(.022,.025,.1),m,x,0,.11,i));mk(new THREE.BoxGeometry(.05,.03,.07),m,-.075,0,.03,i).rotation.y=-.5;return g}
 const vm={blue:glove(0x2a62ff),green:glove(0x22bb44)};
 vm.blue.position.set(-.26,-.26,-.5);vm.green.position.set(.26,-.26,-.5);
 [vm.blue,vm.green].forEach(h=>{h.rotation.y=PI;h.visible=false;h.rotation.x=.15;cam.add(h)});
+
+/* ---------- characters list ---------- */
+function mkToppy(){const g=new THREE.Group(),sk=M(0xf6dccb,0x120804,{roughness:.4}),dr=M(0xc7305e,0x1a0410,{roughness:.85}),hr=M(0x4a2210,0,{roughness:.9}),dk=M(0x040404),rd=M(0xa01020,0x200000),wh=M(0xffffff);
+ mk(new THREE.CylinderGeometry(.34,.8,1.15,18),dr,0,1.0,0,g);mk(new THREE.CylinderGeometry(.27,.36,.55,14),dr,0,1.82,0,g);mk(new THREE.TorusGeometry(.3,.04,6,20),wh,0,2.1,0,g).rotation.x=PI/2;
+ [-.2,.2].forEach(x=>{mk(new THREE.CylinderGeometry(.07,.07,.5,8),sk,x,.25,0,g);mk(new THREE.BoxGeometry(.2,.1,.32),M(0x6a1010),x,.02,.07,g)});
+ [-1,1].forEach(s=>{const a=mk(new THREE.CylinderGeometry(.06,.05,.75,8),sk,s*.5,1.78,0,g);a.rotation.z=s*.3;mk(new THREE.SphereGeometry(.08,8,8),sk,s*.62,1.4,0,g)});
+ const h=new THREE.Group();h.position.y=2.6;g.add(h);mk(new THREE.SphereGeometry(.52,22,18),sk,0,0,0,h);mk(new THREE.SphereGeometry(.56,18,12,0,PI*2,0,1.25),hr,0,.04,-.03,h);
+ [-1,1].forEach(s=>{mk(new THREE.SphereGeometry(.2,10,8),hr,s*.55,-.2,-.05,h);mk(new THREE.ConeGeometry(.16,.3,3),dr,s*.5,.38,.1,h).rotation.z=s*PI/2;
+  mk(new THREE.SphereGeometry(.13,12,10),dk,s*.2,.02,.44,h).scale.set(1,1.3,.5);mk(new THREE.SphereGeometry(.035,8,8),M(0xffffff,0xffffff),s*.17,.07,.5,h);mk(new THREE.SphereGeometry(.03,8,8),M(0xff2200,0xff2200),s*.22,-.03,.5,h);
+  mk(new THREE.SphereGeometry(.08,8,6),M(0xf08a8a,0x201010),s*.3,-.15,.43,h).scale.set(1,.6,.3)});
+ mk(new THREE.TorusGeometry(.14,.02,6,16,PI),rd,0,-.14,.47,h).rotation.z=PI;mk(new THREE.BoxGeometry(.012,.4,.01),dk,.14,.25,.5,h).rotation.z=.4;return g}
+function mkTurtle(){const g=new THREE.Group(),sh=M(0x2a9d4a,0x041008,{roughness:1}),sk=M(0x6ccf6c,0x061a06,{roughness:1}),pl=M(0x1f7a38,0,{roughness:1}),dk=M(0x050505);
+ mk(new THREE.SphereGeometry(.9,20,14,0,PI*2,0,PI/2),sh,0,.45,0,g).scale.y=.8;mk(new THREE.CylinderGeometry(.9,.9,.1,20),M(0xe8d9a0),0,.45,0,g);
+ for(let i=0;i<5;i++){const a=i/5*PI*2;mk(new THREE.SphereGeometry(.2,10,8),pl,Math.cos(a)*.45,1.05,Math.sin(a)*.45,g).scale.set(1,.35,1)}mk(new THREE.SphereGeometry(.22,10,8),pl,0,1.14,0,g).scale.set(1,.35,1);
+ mk(new THREE.SphereGeometry(.34,14,12),sk,0,.62,1.0,g);[-1,1].forEach(s=>{mk(new THREE.SphereGeometry(.06,8,8),dk,s*.14,.72,1.28,g);mk(new THREE.SphereGeometry(.17,10,8),sk,s*.62,.2,s>0?.55:.55,g);mk(new THREE.SphereGeometry(.17,10,8),sk,s*.62,.2,-.55,g)});
+ mk(new THREE.TorusGeometry(.1,.015,6,12,PI),dk,0,.56,1.3,g).rotation.z=PI;mk(new THREE.SphereGeometry(.12,8,8),sk,0,.25,-1.0,g);return g}
+function mkEmp(){const g=new THREE.Group(),sk=M(0xe0b08a,0x100804),sh=M(0x4a5560),vest=M(0xff7a00,0x331400),hat=M(0xffd21f,0x332800),pk=M(0x30343a,0,{metalness:.5,roughness:.4}),dk=M(0x050505),pn=M(0x2a3a5a);
+ [-.17,.17].forEach(x=>{mk(new THREE.BoxGeometry(.22,.9,.24),pn,x,.55,0,g);mk(new THREE.BoxGeometry(.24,.12,.4),dk,x,.06,.06,g)});
+ mk(new THREE.BoxGeometry(.8,.95,.4),sh,0,1.5,0,g);[-.25,.25].forEach(x=>mk(new THREE.BoxGeometry(.28,.95,.05),vest,x,1.5,.22,g));
+ [-1,1].forEach(s=>{const a=mk(new THREE.BoxGeometry(.16,.77,.16),sh,s*.5,1.725,.31,g);a.rotation.x=2.2});
+ mk(new THREE.SphereGeometry(.3,16,12),sk,0,2.23,0,g);[-.1,.1].forEach(x=>mk(new THREE.SphereGeometry(.035,8,8),dk,x,2.25,.27,g));
+ mk(new THREE.SphereGeometry(.34,16,10,0,PI*2,0,PI/2),hat,0,2.28,0,g);mk(new THREE.CylinderGeometry(.36,.36,.04,16),hat,0,2.28,.04,g);
+ mk(new THREE.BoxGeometry(.6,.8,.3),pk,0,1.55,-.35,g);mk(new THREE.CylinderGeometry(.08,.08,.1,10),M(0x2a62ff,0x1a3acc),-.15,2.02,-.35,g);mk(new THREE.CylinderGeometry(.08,.08,.1,10),M(0x22bb44,0x108a30),.15,2.02,-.35,g);
+ const gb=glove(0x2a62ff),gg=glove(0x22bb44);gb.scale.setScalar(2.4);gg.scale.setScalar(2.4);gb.position.set(-.5,1.5,.62);gg.position.set(.5,1.5,.62);g.add(gb);g.add(gg);return g}
+function mkTape(){const g=new THREE.Group(),b=M(0x1a1a20,0x050508,{roughness:.5,metalness:.3}),wh=M(0xe8e8e8,0x222222);
+ mk(new THREE.BoxGeometry(2,1.3,.28),b,0,1.4,0,g);mk(new THREE.BoxGeometry(1.7,.6,.02),M(0xe8d9a0),0,1.55,.15,g);
+ [-.5,.5].forEach(x=>{mk(new THREE.CylinderGeometry(.22,.22,.04,20),wh,x,1.55,.17,g).rotation.x=PI/2;mk(new THREE.CylinderGeometry(.1,.1,.05,12),M(0x111111),x,1.55,.18,g).rotation.x=PI/2});
+ const old=G;G=g;label('BROTHERS\nPLAYTIME CO.',1.5,.4,'#ffd21f',null,0,1.0,.16,0,52);G=old;
+ for(let i=0;i<3;i++){const t=mk(new THREE.TorusGeometry(.5+i*.25,.025,6,24,PI/1.5),M(0xffd21f,0xffd21f),1.2,1.4,0,g);t.rotation.z=-PI/3}return g}
+function mkMyst(){const g=new THREE.Group(),m=M(0x08080a,0x020203,{roughness:1});
+ mk(new THREE.CylinderGeometry(.5,.7,1.8,12),m,0,1.4,0,g);mk(new THREE.SphereGeometry(.65,16,12),m,0,2.7,0,g);
+ [-.25,.25].forEach(x=>mk(new THREE.SphereGeometry(.08,8,8),M(0xffffff,0xffffff),x,2.8,.55,g));
+ [-1,1].forEach(s=>mk(new THREE.BoxGeometry(.2,1.3,.2),m,s*.75,1.5,0,g));[-.25,.25].forEach(x=>mk(new THREE.BoxGeometry(.25,.9,.25),m,x,.45,0,g));return g}
+const CH=[
+ {n:'Sunny',role:'The Sunshine Toy \u2022 Chapter 1 antagonist',d:"Brothers Playtime Co.'s best selling toy of 1986. He only wants to play... and he never stops smiling.",mk:()=>mkSunny(),cy:2.3,d2:10.5,ani:1},
+ {n:'Toppy',role:'The First Toy \u2022 1964',d:'The very first toy Brothers Playtime Co. ever made. A living doll, kept locked inside her container.',mk:mkToppy,cy:1.6,d2:6.9},
+ {n:'Turtle Plush',role:'Create a Friend Day toy',d:'A soft green turtle from the Create a Friend room. Place it in the container to start the machine.',mk:mkTurtle,cy:.75,d2:5.8},
+ {n:'The Employee (You)',role:'Player',d:'A brand new factory worker. Carries the Green and Blue Grab Pack, and keeps their fingers pointed up.',mk:mkEmp,cy:1.4,d2:7.2},
+ {n:'The Tape Narrator',role:'Voice only',d:'A calm company voice that greets every new employee on the old orientation tapes. Nobody knows who he is.',mk:mkTape,cy:1.4,d2:8.6},
+ {n:'???',role:'Locked \u2022 Coming in a future chapter',d:'Something else lives inside the factory...',mk:mkMyst,cy:1.7,d2:7.6}];
+let chOn=0,chInit=0,PR,PS,PC,chs=[];
+function initChars(){if(chInit)return;chInit=1;
+ PR=new THREE.WebGLRenderer({antialias:true,alpha:true});PR.setSize(240,285);PR.setPixelRatio(1);PR.outputEncoding=THREE.sRGBEncoding;PR.toneMapping=THREE.ACESFilmicToneMapping;
+ PS=new THREE.Scene();PS.add(new THREE.AmbientLight(0x9aa4c8,.9));const k=new THREE.DirectionalLight(0xfff0d8,1.8);k.position.set(3,6,6);PS.add(k);const r=new THREE.DirectionalLight(0x6a8cff,1);r.position.set(-5,3,-4);PS.add(r);
+ PC=new THREE.PerspectiveCamera(32,240/285,.1,100);const L=$('clist');L.innerHTML='';
+ CH.forEach(c=>{const row=document.createElement('div');row.className='crow';const cv=document.createElement('canvas');cv.width=240;cv.height=285;row.append(cv);
+  const tx=document.createElement('div');tx.innerHTML='<h4>'+c.n+'</h4><small>'+c.role+'</small><p>'+c.d+'</p>';row.append(tx);L.append(row);
+  const g=c.mk();g.visible=false;g.position.set(0,c.ani?.12:0,0);PS.add(g);chs.push({c,g,cx:cv.getContext('2d')})})}
+function chLoop(){if(!chOn)return;requestAnimationFrame(chLoop);const t=performance.now()/1000;
+ chs.forEach((o,i)=>{chs.forEach(p=>p.g.visible=false);o.g.visible=true;o.g.rotation.y=Math.sin(t*.7+i)*.7;
+  if(o.c.ani){const sx=px,sz=pz;px=0;pz=9;animS(o.g,.016,'idle');px=sx;pz=sz}
+  PC.position.set(0,o.c.cy+.3,o.c.d2);PC.lookAt(0,o.c.cy,0);PR.render(PS,PC);o.cx.clearRect(0,0,240,285);o.cx.drawImage(PR.domElement,0,0)})}
+function openChars(){try{initChars()}catch(e){$('err').textContent='Error: '+e.message;return}$('chars').style.display='flex';chOn=1;chLoop()}
+function closeChars(){$('chars').style.display='none';chOn=0}
 
 /* ---------- vhs intro ---------- */
 const vc=$('vhs'),vx=vc.getContext('2d'),VW=320,VH=240;vc.width=VW;vc.height=VH;const vimg=vx.createImageData(VW,VH);
@@ -565,10 +643,11 @@ const grain=()=>{const d=gi.data;for(let i=0;i<d.length;i+=4){d[i]=d[i+1]=d[i+2]
 
 /* ---------- input ---------- */
 $('setb').onclick=openSet;$('pset').onclick=openSet;$('gear').onclick=openSet;$('sclose').onclick=closeSet;
+$('chb').onclick=openChars;$('pchb').onclick=openChars;$('schar').onclick=openChars;$('cclose').onclick=closeChars;
 $('reset').onclick=()=>{CFG=Object.assign({},DEF);buildSets();apply();cam.fov=CFG.fov;cam.updateProjectionMatrix()};
 $('resume').onclick=lock;
 document.addEventListener('pointerlockchange',()=>{if(locked())everLocked=1;updPause()});
-$('play').onclick=()=>{lock();if(touch)fsq();try{A()}catch(e){}unlockSpeech();beep(200,.06,'square',.15);vhs(begin)};
+$('play').onclick=()=>{lock();if(touch)fsq();try{A()}catch(e){}unlockSpeech();try{kidA.load()}catch(e){}beep(200,.06,'square',.15);vhs(begin)};
 $('vskip').onclick=()=>vsk&&vsk();
 function begin(){if(started)return;started=1;$('title').style.display='none';$('sub').style.display='none';obj('Find a tape and put it in the tape player.');inv();$('gear').style.display='block';drone();
  if(touch)$('tc').style.display='block';else lock()}
