@@ -53,6 +53,10 @@ button{background:#ffd21f;border:0;padding:12px 36px;font-size:20px;font-weight:
 #fade{position:fixed;inset:0;background:#000;opacity:0;pointer-events:none;transition:opacity 2s;z-index:12;overflow:hidden;text-align:center}
 #cred{display:none;font-size:24px;line-height:2;animation:up 32s linear forwards}
 @keyframes up{from{transform:translateY(100vh)}to{transform:translateY(-110%)}}
+/* 1964 Toppy commercial (black & white) */
+#ad{position:fixed;inset:0;background:#000;z-index:12;display:none}
+#adc{position:absolute;left:50%;top:50%;width:min(100vw,133.33vh);height:min(75vw,100vh);transform:translate(-50%,-50%);image-rendering:pixelated;filter:grayscale(1) contrast(1.3) brightness(1.05)}
+#adskip{position:absolute;right:14px;bottom:14px;background:#555;color:#fff;font-size:14px;padding:8px 18px;z-index:2}
 /* settings */
 #gear{position:fixed;top:8px;left:50%;transform:translateX(-50%);z-index:4;width:44px;height:36px;padding:0;font-size:20px;background:#0008;color:#fff;border:1px solid #fff5;display:none}
 #set{position:fixed;inset:0;background:#000c;z-index:14;display:none;align-items:center;justify-content:center}
@@ -125,6 +129,7 @@ button{background:#ffd21f;border:0;padding:12px 36px;font-size:20px;font-weight:
 <button class="c" style="background:#e22" onclick="kp('red')"></button><button class="c" style="background:#2c4" onclick="kp('green')"></button><button class="c" style="background:#26f" onclick="kp('blue')"></button><button class="c" style="background:#fd2" onclick="kp('yellow')"></button><br>
 <button style="font-size:14px;padding:6px 16px" onclick="kclose()">Close</button></div>
 <div id="fade"><div id="cred">SUNNY STORYTIME<br>Chapter 1: Sunny's Time<br><br>Founder of Brothers Playtime Co.<br><b>Zakir</b><br><br>Co-Founder<br><b>Muawiya</b><br><br>Beta Testers<br><b>Mohamed</b><br><b>Zuheitha</b><br><br>Thanks for playing!<br>Chapter 2 coming soon...</div></div>
+<div id="ad"><canvas id="adc"></canvas><button id="adskip">Skip</button></div>
 
 <script>window.onerror=(m,s,l)=>{var e=document.getElementById('err');if(e)e.textContent='Error: '+m+' (line '+l+')'}</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -159,10 +164,10 @@ function apply(){R.setPixelRatio(CFG.hq?Math.min(devicePixelRatio,touch?1.5:2):.
 addEventListener('resize',()=>{R.setSize(innerWidth,innerHeight);cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix()});
 
 /* ---------- state ---------- */
-const S={tape:null,paper:0,key:0,blue:0,green:0,light:0,hands:0,circuit:0,plush:0,chase:0,dead:0,lurk:0,spd:0,jt:0,jd:[0,1],kd:0,pd:null,fall:0,song:0,
+const S={tape:null,paper:0,key:0,blue:0,green:0,light:0,hands:0,circuit:0,plush:0,chase:0,dead:0,lurk:0,spd:0,jt:0,jd:[0,1],kd:0,pd:null,fall:0,song:0,sy:1,end:0,gold:0,cH:0,
  code:[0,0,0,0].map(()=>['red','green','blue','yellow'][rnd()*4|0])};
 const solids=[],ints=[],grabs=[],anim=[],doors={},zones=[],strips=[],toys=[],lamps=[],mobs=[],hangs=[],rooms=[];
-let started=0,ui=0,px=0,pz=-2,yaw=0,pitch=0,ent=[],bt=0,jy=0,vy=0,jump=0,cr=0,ch=1.7,gyS=0,blk=0,fk=0,flashOn=1,tt=0,fs=0,lt=0,ni=0,stp=0,held=-1,fire=null,G=scene,gf=0,hb=0,everLocked=0,taping=0,ttsOK=null,sayId=0,curMon=null;
+let started=0,ui=0,px=0,pz=-2,yaw=0,pitch=0,ent=[],bt=0,jy=0,vy=0,jump=0,cr=0,crN=0,ch=1.7,gyS=0,blk=0,fk=0,flashOn=1,tt=0,fs=0,lt=0,ni=0,stp=0,held=-1,fire=null,G=scene,gf=0,hb=0,everLocked=0,taping=0,ttsOK=null,sayId=0,curMon=null,cmOn=0,cmB=0,cmK=0,cmT=null,gPlay=0;
 const keys={},locked=()=>touch?!!started:document.pointerLockElement===R.domElement;
 const na=a=>((a+PI)%(2*PI)+2*PI)%(2*PI)-PI;
 
@@ -191,6 +196,17 @@ const shatter=()=>{noise(.5,.5,6000,'highpass');for(let i=0;i<14;i++)setTimeout(
 function hiss(on){try{if(on&&!hs){const a=A(),s=a.createBufferSource(),g=a.createGain(),f=a.createBiquadFilter();s.buffer=nb;s.loop=true;f.type='bandpass';f.frequency.value=2500;g.gain.value=.02*CFG.vol;s.connect(f);f.connect(g);g.connect(a.destination);s.start();hs=s}else if(!on&&hs){hs.stop();hs=null}}catch(e){}}
 function drone(){try{const a=A();DG=a.createGain();DG.gain.value=.5*CFG.vol;DG.connect(a.destination);[[55,.05],[58.3,.05],[110.4,.015],[41.2,.06]].forEach(([f,v],i)=>{const o=a.createOscillator(),g=a.createGain();o.type=i==2?'triangle':'sine';o.frequency.value=f;g.gain.value=v;o.connect(g);g.connect(DG);o.start()})}catch(e){}}
 const MEL=[659,587,523,587,659,659,659,587,587,587,659,784,784];
+/* Sunny's heavy footsteps (louder when he is close, clanky inside the vent) */
+function sunStep(d){if(CFG.vol<=0)return;const v=Math.max(.05,1-d/30);beep(62+rnd()*14,.26,'sine',1.1*v,34);noise(.14,.7*v,240,'lowpass');
+ if(S.pd!=null){noise(.22,.22*v,1500,'bandpass');beep(380+rnd()*90,.14,'square',.05*v,260)}else noise(.08,.2*v,3200,'highpass')}
+/* chase music: pounding drums + bass + a twisted lullaby, gets faster when Sunny is close */
+function chaseMusic(on){if(on&&!cmOn){cmOn=1;cmB=0;cmTick()}else if(!on&&cmOn){cmOn=0;clearTimeout(cmT);if(!S.chase&&!S.dead&&started){noise(1.4,.3,6000,'highpass');beep(60,1.3,'sine',.5,30)}}}
+function cmTick(){if(!cmOn)return;const b=cmB++,k=cmK;
+ if(gPlay){beep(140,.2,'sine',.55,45);if(b%2)noise(.05,.1,7000,'highpass');
+  const bass=[55,55,65.4,49,55,73.4,65.4,49][b%8];beep(bass,.22,'sawtooth',.2,bass*.9);
+  if(b%2==0){const n=MEL[(b>>1)%MEL.length]*.5;beep(n,.3,'square',.06+.04*k);beep(n*1.06,.3,'square',.04+.03*k)}
+  if(b%8==7)beep(900,.25,'sawtooth',.05,300)}
+ cmT=setTimeout(cmTick,340-130*k)}
 
 /* ---------- voices ---------- */
 let VO=[];function loadV(){try{VO=speechSynthesis.getVoices().filter(v=>/^en/i.test(v.lang))}catch(e){}}
@@ -336,6 +352,7 @@ t0:["Hello, and welcome to Brothers Playtime Company!","Since nineteen sixty-fou
 t1:["Hello, employee, and welcome to Brothers Playtime Company.","Here, we do not just make toys. We make friends.","Please look around the factory, and find your color code. It will open the way forward.","And a word of advice... if you hear a music box, do not follow it."],
 t2:["Employee, this is the Green and Blue Grab Pack, the G B G P.","We pull the trigger to fire. Pull again to retract. Hold to grip onto an object.","Do NOT do it to a worker. It may cause injury.","The wire is conductive. Use it for wiring.","~(Children) What's the time...? STORYTIME!"],
 t3:["Employee, you have done well with the blue hand.","Now take the green hand too. Together they can complete any circuit.","The vents are the only way forward. Do not look back."]};
+T.ad=["Nineteen sixty-four. Brothers Playtime Company proudly presents...","Toppy! The doll who loves you back!","She smiles! She waves! She even sings you to sleep!","Every little girl deserves a friend who will never, ever leave her side.","Toppy. Now at your local toy store, for only four ninety-nine!","Toppy... will never let you go."];
 function playTape(id,mn){taping=1;ttsOK=null;obj('Listening to the tape...');hiss(1);
  if(mn){mn.mode='play';mn.tid=id;mn.li=0;mn.t0=tt;curMon=mn;monL.position.set(mn.x,1.9,mn.z+.9);monL.intensity=.9;mn.pl.material.emissive.set(0x0a3a0a)}
  say(T[id],()=>{hiss(0);taping=0;
@@ -450,13 +467,15 @@ function mkSunny(){const g=new THREE.Group(),u=g.userData,sk=skin(0xffffff),ray=
  u.aR=mkArm(tor,-.62,sk,dk,wh);u.aL=mkArm(tor,.62,sk,dk,wh);u.lR=mkLeg(g,-.22,sk,dk);u.lL=mkLeg(g,.22,sk,dk);
  g.traverse(o=>{if(o.isMesh)o.castShadow=true});scene.add(g);return g}
 const sunny=mkSunny(),stalk=mkSunny();stalk.visible=false;sunny.position.set(0,.3,-40);
-/* vent follow + falling + song (called once per frame from animS) */
+/* vent follow + falling + song + crouch-squash (called once per frame from animS) */
 function vtick(dt){
  if(S.chase&&!S.dead&&sunny.visible){if(S.pd==null&&sunny.position.z<=-112)S.pd=0;
-  if(S.pd!=null){S.pd=Math.min(PL,S.pd+Math.min(9,7.4+S.spd)*dt);const q=pathAt(S.pd);sunny.position.x=q.x;sunny.position.z=q.z;sunny.rotation.y+=na(Math.atan2(q.dx,q.dz)-sunny.rotation.y)*Math.min(1,dt*10)}}
+  if(S.pd!=null){S.pd=Math.min(PL,S.pd+Math.min(9,7.4+S.spd)*dt);const q=pathAt(S.pd);sunny.position.x=q.x;sunny.position.z=q.z;sunny.position.y=ventY(q.x,q.z)+.3+Math.abs(Math.sin(tt*6))*.15;sunny.rotation.y+=na(Math.atan2(q.dx,q.dz)-sunny.rotation.y)*Math.min(1,dt*10)}}
+ {const cc=sunny.position.z<-112?cellAt(sunny.position.x,sunny.position.z):0,lw=(cc&&cc.low&&!S.dead&&!S.fall)?.5:1;S.sy+=(lw-S.sy)*Math.min(1,dt*8);sunny.scale.y=sunny.scale.x*S.sy}
  const f=S.fall;if(f){f.t+=dt;f.vy-=24*dt;sunny.position.x+=f.vx*dt;sunny.position.z+=f.vz*dt;sunny.position.y+=f.vy*dt;sunny.rotation.x+=f.rx*dt;sunny.rotation.z+=f.rz*dt;
   if(sunny.position.y<-46){sunny.visible=false;S.fall=0;sunny.rotation.set(0,PI,0);sunny.position.y=.3}}
  vgl.forEach((s,i)=>s.material.opacity=.45+.4*Math.sin(tt*6+i));
+ if(S.circuit)beltT2.offset.y-=dt*4.2;
  if(S.song){song.volume=Math.min(1,CFG.vol);if(taping||S.chase||S.dead)stopSong()}}
 function animS(s,dt,m){if(s===sunny){vtick(dt);if(S.fall)m='fall'}
  const u=s.userData,c=m=='chase',d=m=='dead',L=m=='lurk',I=m=='idle',F=m=='fall',w=c||d||F,sg=I&&S.song&&s===sunny,aw=Math.sin(tt*12),P=(o,k,v,r)=>{o.rotation[k]+=(v-o.rotation[k])*Math.min(1,dt*(r||6))};
@@ -524,28 +543,35 @@ const plM=box(-5,1.4,-106,.9,.7,.9,0,0);plM.material.visible=false;
 addInt(plM,'Take turtle plush',()=>{S.plush=1;pl.visible=false;plM.visible=false;inv();beep(500,.1,'square',.1)});
 const cont=box(5,1.2,-106,2,2.4,2,0x66dddd,1);cont.material.transparent=true;cont.material.opacity=.5;
 addInt(cont,()=>S.chase?null:S.plush?'Put plush in container':'Toy container (needs a toy)',()=>{if(!S.plush)return msg('It needs a toy.');S.plush=0;inv();pl.visible=true;pl.position.set(5,2.7,-106);openDoor(6);
- blk=.9;stinger();S.chase=1;S.spd=0;S.pd=null;sunny.visible=true;sunny.rotation.set(0,PI,0);sunny.position.set(0,.3,-88);obj('SUNNY IS COMING! RUN through the door and into the vent!');msg('RUN!!')});
+ blk=.9;stinger();S.chase=1;S.spd=0;S.pd=null;stopSong();sunny.visible=true;sunny.rotation.set(0,PI,0);sunny.position.set(0,.3,-88);obj('SUNNY IS COMING! RUN through the door and into the vent!');msg('RUN!!')});
 zones.push([-96.5,()=>obj('Find a toy for the container. Create a friend!')]);
 
-/* R7/R8: LONG winding vent + falling Sunny + song button */
+/* R7/R8: LONG winding vent (crouch parts + fast downhill belts) + falling Sunny + song button */
 [7,8].forEach(i=>rooms[i].children.slice().forEach(m=>{const keep=i==8&&Math.abs(m.position.z+144)<.5&&m.geometry&&m.geometry.type=='BoxGeometry';if(!keep){rooms[i].remove(m);const k=solids.indexOf(m);if(k>=0)solids.splice(k,1)}}));
 const VH=3.6,VC=3.2,VF=1.6,ZS=-112,ventG=new THREE.Group(),cells=[],cmap={},PP=[],vgl=[],crT={},built={},NB=[[1,0],[-1,0],[0,1],[0,-1]],kinds=['dont','back','face','hand','noexit','run','follow'];
 let ki=0;scene.add(ventG);G=ventG;
 const ribT=tex(128,(g,w)=>{g.fillStyle='#17181b';g.fillRect(0,0,w,w);const q=g.createLinearGradient(30,0,100,0);q.addColorStop(0,'#0b0c0e');q.addColorStop(.5,'#9a9da3');q.addColorStop(1,'#0b0c0e');g.fillStyle=q;g.fillRect(30,0,70,w);grit(g,w,400,.2,3)},9,1),
  ribM=M(0xffffff,0,{map:ribT,bumpMap:ribT,bumpScale:2,metalness:.55,roughness:.55}),
  beltT=tex(64,g=>{g.fillStyle='#0c0d10';g.fillRect(0,0,64,64);g.fillStyle='#24272c';g.fillRect(0,0,64,5);g.fillStyle='#000';g.fillRect(0,5,64,2);grit(g,64,60,.2,2)},1,VC/2),
- beltM=M(0xffffff,0,{map:beltT,roughness:.55,metalness:.35});
+ beltM=M(0xffffff,0,{map:beltT,roughness:.55,metalness:.35}),
+ beltT2=tex(64,g=>{g.fillStyle='#14110a';g.fillRect(0,0,64,64);g.strokeStyle='#e0b000';g.lineWidth=7;g.lineCap='round';g.beginPath();g.moveTo(10,46);g.lineTo(32,20);g.lineTo(54,46);g.stroke();g.fillStyle='#000';g.fillRect(0,60,64,4)},1,VC/2),
+ beltM2=M(0xffffff,0x1a1400,{map:beltT2,roughness:.55,metalness:.35}),
+ railM=M(0xd01818,0xb00808);
 strips.push(beltT);
 /* the path: down 2, right 3, down 3, left 4, up 2, left 3, down 5, right 4, down 1 */
 (()=>{let gx=0,gz=0;const add=()=>{const c={gx,gz,i:cells.length};cells.push(c);cmap[gx+','+gz]=c};add();
  [['D',2],['R',3],['D',3],['L',4],['U',2],['L',3],['D',5],['R',4],['D',1]].forEach(([d,n])=>{for(let k=0;k<n;k++){gx+=d=='R'?1:d=='L'?-1:0;gz+=d=='D'?1:d=='U'?-1:0;add()}})})();
 cells.forEach((c,i)=>{const n=cells[i+1],p=cells[i-1];c.x=c.gx*VC;c.z=ZS-VF-c.gz*VC;c.og=n?[n.gx-c.gx,n.gz-c.gz]:[0,1];c.ig=p?[c.gx-p.gx,c.gz-p.gz]:[0,1];c.fx=c.og[0];c.fz=-c.og[1];c.turn=!!(p&&n&&(c.og[0]!=c.ig[0]||c.og[1]!=c.ig[1]))});
+/* height profile: DOWN ramps (fast yellow belts), UP ramps, and LOW cells you must crouch through */
+const RAMP={6:-1.2,7:-1.2,15:1.2,16:1.2,19:-1.2,20:-1.2,21:-1.2,24:1.8,25:1.8},LOW=[3,4,9,10,11];
+(()=>{let lev=0;cells.forEach((c,i)=>{c.y0=lev;c.y1=lev+(RAMP[i]||0);lev=c.y1;c.ramp=RAMP[i]?1:0;c.sp=RAMP[i]<0?2.6:1;c.low=LOW.includes(i)})})();
 PP.push({x:0,z:ZS,d:0});cells.forEach(c=>PP.push({x:c.x,z:c.z}));PP.push({x:0,z:ZS-10*VC});
 for(let i=1;i<PP.length;i++)PP[i].d=PP[i-1].d+Math.hypot(PP[i].x-PP[i-1].x,PP[i].z-PP[i-1].z);
 const PL=PP[PP.length-1].d;
 function pathAt(d){d=Math.max(0,Math.min(PL,d));let i=0;while(i<PP.length-2&&PP[i+1].d<d)i++;const a=PP[i],b=PP[i+1],l=b.d-a.d||1,t=(d-a.d)/l;return{x:a.x+(b.x-a.x)*t,z:a.z+(b.z-a.z)*t,dx:(b.x-a.x)/l,dz:(b.z-a.z)/l}}
 function pathProj(x,z){let best=1e9,bd=0;for(let i=0;i<PP.length-1;i++){const a=PP[i],b=PP[i+1],dx=b.x-a.x,dz=b.z-a.z,l2=dx*dx+dz*dz||1,t=Math.max(0,Math.min(1,((x-a.x)*dx+(z-a.z)*dz)/l2)),e=(x-a.x-dx*t)**2+(z-a.z-dz*t)**2;if(e<best){best=e;bd=a.d+Math.sqrt(l2)*t}}return bd}
 const cellAt=(x,z)=>cmap[Math.round(x/VC)+','+Math.floor((ZS-z)/VC)];
+function ventY(x,z){const c=cellAt(x,z);if(!c)return 0;if(c.y0==c.y1)return c.y0;const s=((x-c.x)*c.fx+(z-c.z)*c.fz)/VC+.5;return c.y0+(c.y1-c.y0)*Math.max(0,Math.min(1,s))}
 /* red crayon drawings */
 function crayon(k){if(crT[k])return crT[k];const c=document.createElement('canvas');c.width=512;c.height=256;const g=c.getContext('2d');g.lineCap=g.lineJoin='round';
  const st=(p,w)=>{for(let n=0;n<3;n++){g.strokeStyle='rgba('+(150+rnd()*70|0)+',8,8,'+(.5+rnd()*.4)+')';g.lineWidth=w||9;g.beginPath();p.forEach(([x,y],i)=>{const a=x+(rnd()-.5)*5,b=y+(rnd()-.5)*5;i?g.lineTo(a,b):g.moveTo(a,b)});g.stroke()}},
@@ -561,35 +587,41 @@ function crayon(k){if(crT[k])return crT[k];const c=document.createElement('canva
  else{tx('HE IS',256,95,84);tx('BEHIND YOU',256,190,84)}
  const t=new THREE.CanvasTexture(c);t.encoding=THREE.sRGBEncoding;return crT[k]=t}
 function drawing(c,ox,oz){let x=c.x,z=c.z,ry;if(ox){x+=ox*(VF-.2);ry=ox>0?-PI/2:PI/2}else{z-=oz*(VF-.2);ry=oz>0?0:PI}
- const m=new THREE.Mesh(new THREE.PlaneGeometry(2.4,1.2),new THREE.MeshBasicMaterial({map:crayon(kinds[ki++%7]),transparent:true,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-2}));m.position.set(x,1.9,z);m.rotation.y=ry;ventG.add(m)}
-/* build every vent cell: belt floor, ribbed walls, red rails, ceiling, drawings */
+ const m=new THREE.Mesh(new THREE.PlaneGeometry(2.4,1.2),new THREE.MeshBasicMaterial({map:crayon(kinds[ki++%7]),transparent:true,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-2}));m.position.set(x,c.y0+1.9,z);m.rotation.y=ry;ventG.add(m)}
+/* build every vent cell: (tilted) belt floor, ribbed walls, red rails, ceiling (low ones are solid), drawings */
 cells.forEach(c=>{
- const f=new THREE.Mesh(new THREE.PlaneGeometry(VC,VC),beltM);f.position.set(c.x,.03,c.z);f.rotation.set(-PI/2,0,Math.atan2(-c.fx,-c.fz));f.receiveShadow=true;ventG.add(f);c.fl=f;
- box(c.x,VH+.1,c.z,VC+.2,.2,VC+.2,trimM);
+ const dy=c.y1-c.y0,sl=dy/VC,sc=1/Math.cos(Math.atan(sl)),ymin=Math.min(c.y0,c.y1),wh=Math.abs(dy)+VH,cg=new THREE.Group();
+ cg.position.set(c.x,(c.y0+c.y1)/2,c.z);if(c.fz)cg.rotation.x=-Math.atan(sl*c.fz);if(c.fx)cg.rotation.z=Math.atan(sl*c.fx);ventG.add(cg);
+ const f=new THREE.Mesh(new THREE.PlaneGeometry(VC,VC),c.sp>1?beltM2:beltM);f.position.y=.03;f.rotation.set(-PI/2,0,Math.atan2(-c.fx,-c.fz));f.scale.y=sc;f.receiveShadow=true;cg.add(f);c.fl=f;
+ if(c.low){box(c.x,c.y0+1.6,c.z,VC+.2,.2,VC+.2,trimM,1);box(c.x,c.y0+1.47,c.z,VC-.4,.05,.3,0xd01818,0,0xb00808)}
+ else{const ce=new THREE.Mesh(new THREE.BoxGeometry(VC+.2,.2,VC+.2),trimM);ce.position.y=VH+.1;if(c.fz)ce.scale.z=sc;if(c.fx)ce.scale.x=sc;cg.add(ce)}
  NB.forEach(([ox,oz])=>{const n=cmap[(c.gx+ox)+','+(c.gz+oz)];if(n&&Math.abs(n.i-c.i)==1)return;if((c.i==0&&!ox&&oz==-1)||(c.i==cells.length-1&&!ox&&oz==1))return;
   const ex=c.x+ox*VF,ez=c.z-oz*VF,key=ex.toFixed(1)+','+ez.toFixed(1);
-  if(!built[key]){built[key]=1;ox?box(ex,VH/2,ez,.3,VH,VC+.2,ribM,1):box(ex,VH/2,ez,VC+.2,VH,.3,ribM,1)}
-  ox?box(c.x+ox*(VF-.25),.1,c.z,.14,.2,VC-.1,0xd01818,0,0xb00808):box(c.x,.1,c.z-oz*(VF-.25),VC-.1,.2,.14,0xd01818,0,0xb00808)});
- if(c.turn){const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:glowT,blending:THREE.AdditiveBlending,transparent:true,depthWrite:false}));sp.scale.set(2.6,2.6,1);sp.position.set(c.x,3.1,c.z);ventG.add(sp);vgl.push(sp);drawing(c,c.ig[0],c.ig[1])}
- else if(c.i>0&&c.i<cells.length-1&&c.i%3==1){const s=c.i%2?1:-1;c.og[0]?drawing(c,0,s):drawing(c,s,0)}
+  if(!built[key]){built[key]=1;ox?box(ex,ymin+wh/2,ez,.3,wh,VC+.2,ribM,1):box(ex,ymin+wh/2,ez,VC+.2,wh,.3,ribM,1)}
+  const rl=new THREE.Mesh(new THREE.BoxGeometry(ox?.14:VC-.1,.2,ox?VC-.1:.14),railM);
+  if(ox)rl.position.set(ox*(VF-.25),.1,0);else rl.position.set(0,.1,-oz*(VF-.25));
+  if(c.ramp){if(ox)rl.scale.z=sc;else rl.scale.x=sc}cg.add(rl)});
+ if(c.turn){const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:glowT,blending:THREE.AdditiveBlending,transparent:true,depthWrite:false}));sp.scale.set(2.6,2.6,1);sp.position.set(c.x,c.y0+3.1,c.z);ventG.add(sp);vgl.push(sp);drawing(c,c.ig[0],c.ig[1])}
+ else if(c.i>0&&c.i<cells.length-1&&!c.ramp&&!c.low){const s=c.i%2?1:-1;c.og[0]?drawing(c,0,s):drawing(c,s,0)}
+ if(c.low&&c.i==LOW[0]||c.low&&c.i==9){const lb=label('CROUCH',1.7,.5,'#e22',null,c.x,c.y0+1.15,c.z,0,52);lb.rotation.x=-PI/2;lb.position.y=c.y0+.06}
 });
 [-1,1].forEach(s=>{box(s*2.1,1.8,ZS-.3,.8,3.6,.2,0x24262b,1);box(s*2.1,1.8,ZS-10*VC+.25,.8,3.6,.2,0x24262b,1)});
 doors[8].userData.ind=box(0,3.1,ZS-10*VC+.2,2.2,.18,.06,0x330000,0,0xff0000);
 const vr=new THREE.PointLight(0xff1a0a,1.1,10);vr.position.set(0,2.6,-141);scene.add(vr);
 label('VENTS',2,.5,'#888',null,0,4.2,-111.75,0,40);
-/* the hanging crate (last long straight) */
-const crate=box(-3.2,2.7,-139.2,.9,.9,.9,0x8a6a3a,0,0x551100),rope=mk(new THREE.CylinderGeometry(.025,.025,.5,5),pipeM,-3.2,3.38,-139.2);
+/* the hanging crate (first cell of the last straight, deep down) */
+const CB=ventY(-9.6,-139.2),crate=box(-9.6,CB+2.7,-139.2,.9,.9,.9,0x8a6a3a,0,0x551100),rope=mk(new THREE.CylinderGeometry(.025,.025,.45,5),pipeM,-9.6,CB+3.375,-139.2);
 const bang=()=>{noise(.4,.8,700,'lowpass');beep(80,.5,'square',.5,35)};
 function fallScream(){beep(1100,1.8,'sawtooth',.3,150);beep(850,1.8,'sawtooth',.2,110);noise(1.2,.25,2500,'highpass');setTimeout(()=>{beep(48,1.4,'sine',.6,22);noise(.8,.4,300,'lowpass')},1800)}
 function sunnyFall(){const c=cellAt(sunny.position.x,sunny.position.z),q=pathAt(S.pd||0);if(c)c.fl.visible=false;
  S.fall={t:0,vy:3,vx:-q.dx*3,vz:-q.dz*3,rx:(rnd()<.5?-1:1)*(3+rnd()*2),rz:(rnd()-.5)*3};fallScream();fk=1.2;$('flash').style.opacity=.7;setTimeout(()=>$('flash').style.opacity=0,90)}
 grabs.push({m:crate,ok:()=>S.chase,type:'any',fn:()=>{S.chase=0;obj('Run!');rope.visible=false;
- let cy=2.7,vy=0,cd=pathProj(-3.2,-139.2),hit=0,fv=0;
+ let cy=2.7,vy=0,cd=pathProj(-9.6,-139.2),hit=0,fv=0;
  anim.push(dt=>{
   if(!hit){vy-=22*dt;cy+=vy*dt;
-   if(cy<=.45){cy=.45;vy=0;const sd=S.pd==null?0:S.pd;cd-=15*dt;const q=pathAt(cd);crate.position.set(q.x,cy,q.z);crate.rotation.y+=dt*4;
+   if(cy<=.45){cy=.45;vy=0;const sd=S.pd==null?0:S.pd;cd-=15*dt;const q=pathAt(cd);crate.position.set(q.x,ventY(q.x,q.z)+cy,q.z);crate.rotation.y+=dt*4;
     if(cd<=sd+1){hit=1;bang();sunnyFall();openDoor(8);obj('Sunny fell! Go through the exit door.')}}
-   else crate.position.y=cy}
+   else crate.position.y=CB+cy}
   else{fv-=22*dt;crate.position.y+=fv*dt;crate.rotation.x+=dt*4;if(crate.position.y<-30){crate.visible=false;return 1}}})}});
 zones.push([-128,()=>{if(S.chase)obj('Find the crate hanging in the vent and pull it down with a grab hand!')}]);
 const dead=()=>{if(S.dead)return;S.dead=1;S.jt=0;S.pd=null;stopSong();const dx=sunny.position.x-px,dz=sunny.position.z-pz,l=Math.hypot(dx,dz)||1;S.jd=[dx/l,dz/l];
@@ -607,10 +639,10 @@ const sbtn=mk(new THREE.CylinderGeometry(.2,.22,.12,20),M(0xcc0000,0xff1010),2.8
 label('SUNNY\nSONG',.9,.5,'#fff','#600',2.8,1.5,-37.08,0,38);
 addInt(sbtn,()=>S.song?'Stop the song':'Press the red button',toggleSong,3.4);
 grabs.push({m:sbtn,type:'any',fn:()=>{toggleSong();return false}});
+
 /* ===== NOTES + SECRET ROOM ===== */
 {
 const NT=10;let nRead=0,nel=null,secOpen=0,sdoor=null;
-/* ---- note reader ---- */
 const closeNote=()=>{nel.style.display='none';ui=0;lock()};
 const readNote=(t,m)=>{if(!nel){nel=document.createElement('div');nel.style.cssText='position:fixed;inset:0;z-index:16;display:none;align-items:center;justify-content:center;background:#000a;cursor:pointer';
   nel.innerHTML='<div style="background:#efe6c4;color:#2a2418;width:min(420px,86vw);padding:22px 24px;border-radius:4px;box-shadow:0 0 40px #000;font:20px/1.45 \'Comic Sans MS\',cursive;transform:rotate(-1.2deg)"><div id="nt"></div><div style="margin-top:16px;font:13px Arial;color:#8a7a50;text-align:center">tap or click to close</div></div>';
@@ -627,20 +659,17 @@ note(4,-4.3,-70.1,'Do NOT go down the stairway. The vents are safer. (They are n
 note(4,4.0,-67.8,'Day 482: Sunny moved last night. Nobody moved him.');
 note(6,-5.9,-105.8,'Create a Friend Day! Every toy deserves a friend... and every friend deserves a toy.');
 
-/* ---- the SECRET hand scanner (hidden low on the wall behind the pillar in Sunny's hall) ---- */
 RM(2);const scn=box(7.62,.75,-44.2,.3,.9,.7,0x2a2d33,0,0x062a10);label('\u270B',.5,.5,'#2f8f4a',null,7.46,1.05,-44.2,-PI/2,70);
 const openSecret=()=>{if(secOpen||!sdoor)return;secOpen=1;const k=solids.indexOf(sdoor);if(k>=0)solids.splice(k,1);secL.intensity=1.3;
  beep(110,.9,'sawtooth',.12,55);noise(.7,.15,400);fk=.8;anim.push(dt=>{sdoor.position.y+=dt*1.8;if(sdoor.position.y>6){sdoor.visible=false;return 1}});
  msg('You hear a hidden door slide open somewhere...');obj('A hidden door opened in the poster room. Check the LEFT wall!')};
 grabs.push({m:scn,type:'any',fn:()=>{if(fire&&fire.t!='green'){msg('The scanner ignores the blue hand... try GREEN?');return false}openSecret()}});
 
-/* ---- cut a hidden doorway into the poster room's left wall ---- */
 const w1=rooms[1].children.find(m=>m.geometry&&m.geometry.type=='BoxGeometry'&&Math.abs(m.position.x+8)<.01&&Math.abs(m.position.z+24)<.01&&m.geometry.parameters.depth==16);
 if(w1){const wm=w1.material,k=solids.indexOf(w1);rooms[1].remove(w1);if(k>=0)solids.splice(k,1);RM(1);
  box(-8,2.5,-19.025,.4,5,6.05,wm,1);box(-8,2.5,-28.225,.4,5,7.55,wm,1);box(-8,4.2,-23.25,.4,1.6,2.4,wm,1);
  sdoor=box(-8,1.7,-23.25,.4,3.4,2.4,wm,1)}
 
-/* ---- the secret room ---- */
 const secG=new THREE.Group();scene.add(secG);G=secG;const sw=wallMat(0x4a2a3a);
 box(-14.05,-.1,-23.5,12.2,.2,12.4,woodM);box(-14.05,5.1,-23.5,12.2,.2,12.4,ceilM);
 box(-20.1,2.5,-23.5,.4,5,12.4,sw,1);box(-14,2.5,-17.4,12.4,5,.4,sw,1);box(-14,2.5,-29.6,12.4,5,.4,sw,1);
@@ -652,7 +681,6 @@ const secL=new THREE.PointLight(0xffb070,0,9);secL.position.set(-14,3.6,-23.5);s
 const sn=box(-12.5,1.015,-27.3,.5,.025,.36,0xf3ecd2,0,0x4a4630);
 addInt(sn,'Read note',()=>readNote('If you are reading this, you found the first Sunny room. We built Sunny to make children happy. Please take the Golden Sunny... and keep smiling. - Zakir and Muawiya, 1984',sn),2.8);
 
-/* ---- the secret item: the Golden Sunny plush ---- */
 const mkGold=()=>{const g=new THREE.Group(),m=M(0xffc21a,0x6a4500,{metalness:.5,roughness:.35}),dk=M(0x050505);
  mk(new THREE.SphereGeometry(.28,16,12),m,0,.28,0,g).scale.set(1,1.1,.8);mk(new THREE.SphereGeometry(.24,16,12),m,0,.7,0,g);
  for(let i=0;i<10;i++){const a=i/10*PI*2,c=mk(new THREE.ConeGeometry(.07,.2,5),m,Math.cos(a)*.31,.7+Math.sin(a)*.31,0,g);c.rotation.z=a-PI/2}
@@ -664,11 +692,11 @@ addInt(gold,'Take the Golden Sunny plush',()=>{S.gold=1;gold.visible=false;fk=1;
 anim.push(dt=>{if(!gold.visible)return 1;gold.rotation.y+=dt*.9;gold.position.y=1.12+Math.sin(tt*2)*.05});
 const oi=inv;inv=function(){oi();if(S.gold)$('inv').innerHTML+='<br>\u2B50 Golden Sunny Plush'};
 
-/* ---- hint: soft knocking near the hidden door + hide the room when you're far away ---- */
 setInterval(()=>{if(started&&!ui&&!secOpen&&Math.hypot(px+8,pz+23.25)<9){noise(.14,.5,200,'lowpass');setTimeout(()=>noise(.14,.4,180,'lowpass'),260)}},5500);
 setInterval(()=>{secG.visible=pz>-75},700);
 }
 /* ===== END NOTES + SECRET ROOM ===== */
+
 /* R9 catwalk, stairs + Toppy */
 RM(9);box(0,-.1,-147,16,.2,6,metalFloor);box(0,-3.1,-158,16,.2,4,woodM);
 for(let s=0;s<8;s++){const tp=-(s+1)*.375,h=tp+3.2;box(0,-3.2+h/2,-150-(s+.5)*.75,14.4,h,.75,woodM)}
@@ -677,12 +705,64 @@ for(let i=0;i<3;i++){box(-7.2,.6,-145-i*2,.1,1.2,.1,0xaaaaaa);box(7.2,.6,-145-i*
 label("HOME - Toppy's Room",4,.8,'#fff','#a46',0,4,-143.75,0,36);mk(new THREE.PlaneGeometry(6,3),M(0x7a1a2a,0,{roughness:1}),0,-2.95,-158.2).rotation.x=-PI/2;
 const wl=new THREE.PointLight(0xffaa66,1.5,30);wl.position.set(0,1,-154);scene.add(wl);
 const toppy=box(0,-1.7,-158,2,2.6,2,0xe8a0c0,1,0x331122);label('TOPPY',1.4,.5,'#fff',null,0,-.6,-156.95,0,60);
-addInt(toppy,"Open Toppy's container",()=>{ui=1;$('tc').style.display='none';$('gear').style.display='none';unlock();$('fade').style.opacity=1;setTimeout(()=>{$('cred').style.display='block'},2200)},4);
+addInt(toppy,()=>S.end?null:"Open Toppy's container",()=>{S.end=1;ui=1;$('prompt').textContent='';$('tc').style.display='none';$('gear').style.display='none';unlock();stopSong();$('fade').style.opacity=1;
+ setTimeout(()=>toppyAd(()=>{$('cred').style.display='block'}),2300)},4);
 zones.push([-144.5,()=>obj("Walk down the stairs and open Toppy's container.")]);
 zones.push([-16.5,()=>obj('Find a tape and a tape player.')]);
 zones.push([-32.5,()=>{fk=.8;obj('Break the hand scanner (blue hand) and take the key from Sunny.')}]);
 zones.push([-48.5,()=>obj('Power the light with the blue hand on the socket.')]);
 const gy=z=>z>-150?0:z<-156?-3:-(Math.floor((-150-z)/.75)+1)*.375;
+
+/* ---------- 1964 TOPPY DOLL COMMERCIAL (black & white) ---------- */
+let aimg=null;
+function tdoll(g,x,y,s,t,m){g.save();g.translate(x,y);g.scale(s,s);g.rotate(m?Math.sin(t*30)*.04+.1:Math.sin(t*3)*.05);
+ g.fillStyle='#bbb';g.beginPath();g.moveTo(-14,10);g.lineTo(14,10);g.lineTo(26,62);g.lineTo(-26,62);g.fill();
+ g.fillStyle='#fff';g.fillRect(-9,6,18,6);
+ g.strokeStyle='#d8d8d8';g.lineWidth=5;g.lineCap='round';const wv=m?0:Math.sin(t*5)*.5;
+ g.beginPath();g.moveTo(-12,14);g.lineTo(-30,30+wv*14);g.moveTo(12,14);g.lineTo(30,m?30:8+wv*10);g.stroke();
+ g.beginPath();g.moveTo(-8,62);g.lineTo(-9,82);g.moveTo(8,62);g.lineTo(9,82);g.stroke();
+ g.fillStyle='#222';g.fillRect(-14,80,12,6);g.fillRect(2,80,12,6);
+ g.fillStyle='#e6e6e6';g.beginPath();g.arc(0,-14,24,0,6.283);g.fill();
+ g.fillStyle='#1a1a1a';g.beginPath();g.arc(0,-18,25,3.3,6.1);g.fill();g.beginPath();g.arc(-22,-8,8,0,6.3);g.arc(22,-8,8,0,6.3);g.fill();
+ g.fillStyle='#fff';g.beginPath();g.moveTo(0,-38);g.lineTo(-14,-46);g.lineTo(-14,-30);g.fill();g.beginPath();g.moveTo(0,-38);g.lineTo(14,-46);g.lineTo(14,-30);g.fill();
+ g.fillStyle='#000';const e=m?9:5;g.beginPath();g.ellipse(-9,-12,e*.8,e,0,0,6.3);g.ellipse(9,-12,e*.8,e,0,0,6.3);g.fill();
+ g.fillStyle='#fff';if(!m){g.fillRect(-10,-14,2,2);g.fillRect(8,-14,2,2)}else{g.fillRect(-9.5+Math.sin(t*20),-12,1.5,1.5);g.fillRect(8.5+Math.sin(t*20),-12,1.5,1.5)}
+ g.strokeStyle='#000';g.lineWidth=2;g.beginPath();g.arc(0,m?-7:-6,m?12:7,.15,3,false);g.stroke();
+ if(m){g.strokeStyle='#fff';g.lineWidth=1;for(let i=-9;i<=9;i+=3){g.beginPath();g.moveTo(i,-3);g.lineTo(i,2);g.stroke()}g.strokeStyle='#000';g.beginPath();g.moveTo(-3,-38);g.lineTo(2,-26);g.lineTo(-1,-18);g.stroke()}
+ g.fillStyle='rgba(0,0,0,.18)';g.beginPath();g.arc(-15,-4,5,0,6.3);g.arc(15,-4,5,0,6.3);g.fill();g.restore()}
+function adDraw(g,sc,lt,t){const W=320,H=240;g.textAlign='center';g.lineJoin='round';
+ const burst=(a,b)=>{for(let i=0;i<20;i++){g.fillStyle=i%2?a:b;g.beginPath();g.moveTo(160,120);const p=i/20*6.283+t*.3,q=(i+1)/20*6.283+t*.3;g.lineTo(160+Math.cos(p)*300,120+Math.sin(p)*300);g.lineTo(160+Math.cos(q)*300,120+Math.sin(q)*300);g.fill()}},
+ txt=(s,x,y,z,col)=>{g.font='bold '+z+'px "Times New Roman",serif';g.lineWidth=5;g.strokeStyle='#000';g.strokeText(s,x,y);g.fillStyle=col||'#fff';g.fillText(s,x,y)};
+ if(sc==0){g.fillStyle='#222';g.fillRect(0,0,W,H);g.fillStyle='#fff';g.font='italic 16px "Times New Roman",serif';g.fillText('Brothers Playtime Co.',160,90);g.fillText('proudly presents',160,114);g.globalAlpha=Math.min(1,lt/1.2);txt('TOPPY',160,176,60);g.globalAlpha=1}
+ else if(sc==1){burst('#ddd','#777');tdoll(g,160,70+Math.sin(t*3)*3,1.35,t,0);txt('TOPPY!',160,36,34)}
+ else if(sc==2){g.fillStyle='#bbb';g.fillRect(0,0,W,H);for(let i=0;i<8;i++){g.fillStyle=i%2?'#c8c8c8':'#a8a8a8';g.fillRect(0,i*30,W,15)}
+  tdoll(g,90,80+Math.sin(t*4)*3,1.25,t,0);g.fillStyle='#222';g.font='bold 30px serif';for(let i=0;i<5;i++)g.fillText('\u266A',190+i*22,170-((lt*45+i*28)%130));
+  if(lt>0)txt('SHE SMILES!',230,60,22);if(lt>1.3)txt('SHE WAVES!',230,96,22);if(lt>2.6)txt('SHE SINGS!',230,132,22)}
+ else if(sc==3){const gr=g.createLinearGradient(0,0,0,H);gr.addColorStop(0,'#555');gr.addColorStop(1,'#999');g.fillStyle=gr;g.fillRect(0,0,W,H);
+  g.fillStyle='#eee';g.beginPath();g.arc(250,50,22,0,6.3);g.fill();g.fillStyle='#666';g.beginPath();g.arc(258,46,20,0,6.3);g.fill();
+  g.fillStyle='#333';g.fillRect(30,140,200,60);g.fillStyle='#ddd';g.fillRect(30,130,200,22);
+  g.fillStyle='#e8e8e8';g.beginPath();g.arc(80,122,16,0,6.3);g.fill();g.fillStyle='#222';g.beginPath();g.arc(80,116,17,3.2,6.2);g.fill();
+  tdoll(g,130,96+Math.sin(t*3)*2,.6,t,0);g.fillStyle='#fff';g.font='20px serif';for(let i=0;i<4;i++)g.fillText('\u2665',60+i*45,100-((lt*30+i*25)%90));
+  txt('A FRIEND FOR LIFE',160,34,22)}
+ else if(sc==4){burst('#eee','#888');txt('ONLY',160,70,26);const p=1+Math.sin(t*6)*.05;g.save();g.translate(160,138);g.scale(p,p);g.rotate(-.06);txt('$4.99',0,0,66,'#fff');g.restore();txt('AT YOUR LOCAL TOY STORE',160,200,15);tdoll(g,262,120,.55,t,0)}
+ else if(sc==5){g.fillStyle='#000';g.fillRect(0,0,W,H);const s=1.6+Math.min(2,lt*.55);tdoll(g,160+Math.sin(t*40)*2,150,s,t,1);
+  if(Math.sin(lt*14)>0)txt('SHE LOVES YOU',160,36,26,'#fff');if(lt>1.8&&Math.sin(lt*9)>-.2)txt('FOREVER',160,224,34,'#ddd');
+  if(rnd()<.07){g.fillStyle='#fff';g.fillRect(0,0,W,H)}}
+ else{if(!aimg)aimg=g.createImageData(W,H);const d=aimg.data;for(let i=0;i<d.length;i+=4){const v=rnd()*255;d[i]=d[i+1]=d[i+2]=v;d[i+3]=255}g.putImageData(aimg,0,0)}}
+function adPost(g,sc){const W=320,H=240;
+ g.fillStyle='rgba(255,255,255,'+(rnd()<.1?.12:0)+')';g.fillRect(0,0,W,H);g.fillStyle='rgba(0,0,0,'+(.05+rnd()*.08)+')';g.fillRect(0,0,W,H);
+ g.strokeStyle='rgba(255,255,255,.35)';g.lineWidth=1;for(let i=0;i<3;i++)if(rnd()<.5){const x=rnd()*W;g.beginPath();g.moveTo(x,0);g.lineTo(x+rnd()*3,H);g.stroke()}
+ g.fillStyle='rgba(255,255,255,.55)';for(let i=0;i<30;i++)g.fillRect(rnd()*W,rnd()*H,1+rnd()*2,1+rnd()*2);
+ g.fillStyle='rgba(0,0,0,.7)';for(let i=0;i<8;i++)g.fillRect(rnd()*W,rnd()*H,1,1+rnd()*3);
+ const v=g.createRadialGradient(W/2,H/2,H*.35,W/2,H/2,H*.85);v.addColorStop(0,'rgba(0,0,0,0)');v.addColorStop(1,'rgba(0,0,0,.75)');g.fillStyle=v;g.fillRect(0,0,W,H);
+ if(sc==5&&rnd()<.2){const y=rnd()*H;g.drawImage(g.canvas,0,y,W,8+rnd()*14,rnd()*30-15,y,W,12)}}
+function toppyAd(cb){const w=$('ad'),c=$('adc'),g=c.getContext('2d');c.width=320;c.height=240;w.style.display='block';hiss(1);let sc=0,st=performance.now(),stop=0,ai=0,mt;
+ const fin=()=>{if(stop)return;stop=1;clearTimeout(mt);sayId++;try{speechSynthesis.cancel()}catch(e){}hiss(0);w.style.display='none';$('sub').style.display='none';cb()};
+ $('adskip').onclick=fin;
+ const LUL=[523,659,784,659,523,659,784,1047,988,784,659,784];
+ (function mus(){if(stop)return;const n=LUL[ai++%LUL.length];if(sc>=5){beep(n*.84,.5,'triangle',.08,n*.8);beep(n*.89,.5,'sine',.05)}else beep(n,.42,'triangle',.07);mt=setTimeout(mus,sc>=5?560:380)})();
+ (function f(){if(stop)return;const t=performance.now()/1000,lt=(performance.now()-st)/1000;g.save();g.translate(rnd()*2-1,rnd()*2-1);adDraw(g,sc,lt,t);g.restore();adPost(g,sc);requestAnimationFrame(f)})();
+ ttsOK=null;setTimeout(()=>{if(stop)return;say(T.ad,()=>{sc=6;st=performance.now();setTimeout(fin,1500)},i=>{sc=i;st=performance.now()})},900)}
 
 /* ---------- grab pack hands (fingers point UP so the nails never hit the scanners) ---------- */
 function glove(col){const g=new THREE.Group(),i=new THREE.Group(),m=M(col,col&0x333333,{roughness:.6});i.rotation.x=-1.15;g.add(i);
@@ -833,17 +913,18 @@ tbtn('bJ',()=>jump=1);tbtn('bF',()=>{flashOn=!flashOn});
 tbtn('bC',()=>{cr=!cr;$('bC').style.background=cr?'#ff9900cc':'#0008'});
 
 /* ---------- loop ---------- */
-const blocked=(x,z)=>{const b=new THREE.Box3(new V(x-.4,gyS+.1,z-.4),new V(x+.4,gyS+2,z+.4));return solids.some(m=>m.visible&&b.intersectsBox(m.userData.b))};
+const blocked=(x,z)=>{const b=new THREE.Box3(new V(x-.4,gyS+.1,z-.4),new V(x+.4,gyS+(crN?1.3:2),z+.4));return solids.some(m=>m.visible&&b.intersectsBox(m.userData.b))};
 const clock=new THREE.Clock();cam.fov=CFG.fov;cam.updateProjectionMatrix();
 function tick(){requestAnimationFrame(tick);const dt=Math.min(clock.getDelta(),.05);tt+=dt;gf++;
  const hold=started&&(ui||(!touch&&everLocked&&!locked())),play=started&&!hold;
- const jm=Math.hypot(J.x,J.y),crouch=cr||keys.KeyC||keys.ControlLeft,run=!crouch&&(keys.ShiftLeft||jm>.92),
-  mv=play&&!S.dead&&(keys.KeyW||keys.KeyS||keys.KeyA||keys.KeyD||jm>.15);
+ const lowC=pz<-112?cellAt(px,pz):0,jm=Math.hypot(J.x,J.y),crouch=cr||keys.KeyC||keys.ControlLeft||(lowC&&lowC.low),run=!crouch&&(keys.ShiftLeft||jm>.92),
+  mv=play&&!S.dead&&(keys.KeyW||keys.KeyS||keys.KeyA||keys.KeyD||jm>.15);crN=!!crouch;
  if(play&&!S.dead){const f=(keys.KeyW?1:0)-(keys.KeyS?1:0)-J.y,s=(keys.KeyD?1:0)-(keys.KeyA?1:0)+J.x,l=Math.max(1,Math.hypot(f,s)),sp=(crouch?2:run?7.5:4)*dt;
   let dx=(-Math.sin(yaw)*f+Math.cos(yaw)*s)/l*sp,dz=(-Math.cos(yaw)*f-Math.sin(yaw)*s)/l*sp;
-  if(S.circuit){if(Math.abs(px)<1.5&&pz<-80&&pz>-96)dz-=3.5*dt;else if(pz<-112){const cc=cellAt(px,pz);if(cc){dx+=cc.fx*3.5*dt;dz+=cc.fz*3.5*dt}}}
+  if(S.circuit){if(Math.abs(px)<1.5&&pz<-80&&pz>-96)dz-=3.5*dt;else if(pz<-112){const cc=cellAt(px,pz);if(cc){const b=3.5*(cc.sp||1)*dt;dx+=cc.fx*b;dz+=cc.fz*b}}}
   if(!blocked(px+dx,pz))px+=dx;if(!blocked(px,pz+dz))pz+=dz;
-  if((jump||keys.Space)&&jy<=0)vy=6;
+  if((jump||keys.Space)&&jy<=0&&!crouch)vy=6;
+  if(pz<-112&&!crouch&&!S.cH&&gf%10==0&&cells.some(c=>c.low&&Math.hypot(c.x-px,c.z-pz)<6)){S.cH=1;msg('Low vent ahead! Crouch: hold C (or tap CROUCH)')}
   zones.forEach(z=>{if(!z.d&&pz<z[0]){z.d=1;z[1]()}});
   const o=target();$('prompt').textContent=o?(touch?'Tap USE: ':'[E] ')+o.cur:'';
   if(hand.visible&&Math.hypot(px-7.6,pz+72)<6){hand.visible=false;beep(200,.5);msg("Sunny's hand slips away...")}}
@@ -854,35 +935,38 @@ function tick(){requestAnimationFrame(tick);const dt=Math.min(clock.getDelta(),.
  if(play&&!S.dead){
   if(S.chase&&sunny.visible){S.spd+=dt*.08;const sp=Math.min(6.2,4.8+S.spd);sunny.position.z-=sp*dt;sunny.position.x+=(px-sunny.position.x)*Math.min(1,dt*2);sunny.position.y=.3+Math.abs(Math.sin(tt*6))*.15;
    const d=Math.hypot(px-sunny.position.x,pz-sunny.position.z);k=Math.max(0,1-d/16);if(d<1.8)dead();
-   stp-=dt;if(stp<0){stp=.3;step(Math.max(.05,.6*(1-d/30)))}}
+   stp-=dt;if(stp<0){stp=S.pd!=null?.24:.3;sunStep(d)}}
   if(S.lurk){const L=S.lurk;stalk.rotation.y=Math.atan2(px-stalk.position.x,pz-stalk.position.z);const dx=px-stalk.position.x,dz=pz-stalk.position.z,d=Math.hypot(dx,dz)||1;
    stalk.position.x+=dx/d*.7*dt;stalk.position.z+=dz/d*.7*dt;L.t-=dt;k=Math.max(k,.55*Math.max(0,1-d/18));
+   L.fs=(L.fs||0)-dt;if(L.fs<=0){L.fs=.75;sunStep(d*1.6)}
    if(L.t<=0||d<L.vd){stalk.visible=false;S.lurk=0;fk=.9;noise(.5,.4,1500,'highpass');beep(150,.4,'sawtooth',.25,40)}}}
  /* Sunny squeezes down to fit inside the narrow vent */
  {const ts=(!S.dead&&sunny.position.z<-111)?.68:1;sunny.scale.x+=(ts-sunny.scale.x)*Math.min(1,dt*8);sunny.scale.y=sunny.scale.z=sunny.scale.x}
  /* JUMPSCARE */
  if(S.dead){S.jt+=dt;const jt=S.jt,u=sunny.userData,d=2.1+2.8*Math.exp(-jt*20);k=1;
-  sunny.position.set(px+S.jd[0]*d+(rnd()-.5)*.06,.3,pz+S.jd[1]*d+(rnd()-.5)*.06);sunny.rotation.set(0,Math.atan2(-S.jd[0],-S.jd[1]),0);
+  sunny.position.set(px+S.jd[0]*d+(rnd()-.5)*.06,.3+gyS,pz+S.jd[1]*d+(rnd()-.5)*.06);sunny.rotation.set(0,Math.atan2(-S.jd[0],-S.jd[1]),0);
   u.head.scale.setScalar(1+.3*Math.min(1,jt*6)+Math.sin(jt*60)*.04);
   $('flash').style.opacity=jt<.45?(rnd()<.5?(rnd()<.5?1:.55):0):0;
   if(jt>1.3&&$('dead').style.display!='flex'){$('dead').style.display='flex';$('flash').style.opacity=0}
   if(jt>3.3){S.dead=0;$('dead').style.display='none';$('flash').style.opacity=0;R.domElement.style.filter='';px=0;pz=-114;yaw=0;pitch=0;S.spd=0;sunny.position.set(0,.3,-100);sunny.rotation.set(0,PI,0);u.head.scale.setScalar(1)}}
  animS(sunny,dt,S.dead?'dead':S.chase?'chase':'idle');if(stalk.visible)animS(stalk,dt,'lurk');
  const hs_=S.chase&&sunny.visible?sunny:(S.lurk?stalk:null);
- if(play&&hs_&&!S.dead){const d=Math.hypot(px-hs_.position.x,pz-hs_.position.z);lt-=dt;if(lt<=0&&d<30){lt=.5;beep(MEL[ni++%MEL.length]*.97,.9,'triangle',.16*(1-d/30),0)}}
+ if(play&&hs_&&!S.dead&&!cmOn){const d=Math.hypot(px-hs_.position.x,pz-hs_.position.z);lt-=dt;if(lt<=0&&d<30){lt=.5;beep(MEL[ni++%MEL.length]*.97,.9,'triangle',.16*(1-d/30),0)}}
  if(play&&k>0&&!S.dead){hb-=dt;if(hb<=0){hb=.95-.55*k;beep(58,.18,'sine',.5);setTimeout(()=>beep(48,.2,'sine',.38),160)}}
+ cmK=k;gPlay=play&&!S.dead;chaseMusic(!!(S.chase&&!S.dead&&play));
  /* atmosphere */
  if(play){blk=Math.max(0,blk-dt);fk=Math.max(0,fk-dt)}const dk=blk>0&&!S.dead,fv=fk>0&&rnd()<.5&&!S.dead;
  spot.intensity=S.dead?3:(flashOn&&!dk&&!fv?2.4:0);amb.intensity=dk?.02:((pz<-112&&pz>-144?.12:.3)*CFG.bright);fill.intensity=dk?0:.45;
  scene.fog.color.setRGB(.03+k*.15*(.5+.5*Math.sin(tt*8)),.03,.045);scene.background.copy(scene.fog.color);
- if(DG)DG.gain.value=S.dead?0:CFG.vol*(.5+k*1.2);$('hurt').style.opacity=Math.min(1,k*.9);
+ if(DG)DG.gain.value=S.dead?0:CFG.vol*(.5+k*1.2)*(cmOn?.35:1);$('hurt').style.opacity=Math.min(1,k*.9);
  /* video monitor on the tape player */
  if(curMon){if(gf%2==0){monDraw(curMon,tt);curMon.tx.needsUpdate=true}monL.intensity=curMon.mode=='play'?.6+rnd()*.5:.4}
  /* camera */
  bt+=dt*(mv&&jy==0?(run?13:crouch?5:9):0);cam.fov+=((mv&&run?CFG.fov+7:S.dead?CFG.fov+14:CFG.fov)-cam.fov)*dt*5;cam.updateProjectionMatrix();
  const sb=Math.sin(bt);if(mv&&jy==0&&sb<-.95&&!fs){fs=1;step(crouch?.05:.12)}else if(sb>0)fs=0;
- ch+=((crouch?1.0:1.7)-ch)*Math.min(1,dt*10);gyS+=(gy(pz)-gyS)*Math.min(1,dt*12);
- if(S.dead){const sh=Math.max(0,1.5-S.jt)*.12;cam.position.set(px+(rnd()-.5)*sh,1.7+gyS+(rnd()-.5)*sh,pz+(rnd()-.5)*sh);cam.lookAt(sunny.position.x,3.35,sunny.position.z);cam.rotation.z+=(rnd()-.5)*.25*Math.max(0,1.6-S.jt)}
+ const inV=pz<-112&&pz>-144.2;
+ ch+=((crouch?1.0:1.7)-ch)*Math.min(1,dt*10);gyS+=((inV?ventY(px,pz):gy(pz))-gyS)*Math.min(1,dt*(inV?16:12));
+ if(S.dead){const sh=Math.max(0,1.5-S.jt)*.12;cam.position.set(px+(rnd()-.5)*sh,1.7+gyS+(rnd()-.5)*sh,pz+(rnd()-.5)*sh);cam.lookAt(sunny.position.x,3.35+gyS,sunny.position.z);cam.rotation.z+=(rnd()-.5)*.25*Math.max(0,1.6-S.jt)}
  else{cam.position.set(px+(rnd()-.5)*.06*k,ch+gyS+jy+(jy==0?sb*.045*CFG.bob:0),pz);cam.rotation.set(pitch+(rnd()-.5)*.03*k,yaw,Math.sin(bt*.5)*.012*CFG.bob)}
  cam.updateMatrixWorld();
  /* grab pack hands */
