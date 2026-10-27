@@ -607,7 +607,68 @@ const sbtn=mk(new THREE.CylinderGeometry(.2,.22,.12,20),M(0xcc0000,0xff1010),2.8
 label('SUNNY\nSONG',.9,.5,'#fff','#600',2.8,1.5,-37.08,0,38);
 addInt(sbtn,()=>S.song?'Stop the song':'Press the red button',toggleSong,3.4);
 grabs.push({m:sbtn,type:'any',fn:()=>{toggleSong();return false}});
+/* ===== NOTES + SECRET ROOM ===== */
+{
+const NT=10;let nRead=0,nel=null,secOpen=0,sdoor=null;
+/* ---- note reader ---- */
+const closeNote=()=>{nel.style.display='none';ui=0;lock()};
+const readNote=(t,m)=>{if(!nel){nel=document.createElement('div');nel.style.cssText='position:fixed;inset:0;z-index:16;display:none;align-items:center;justify-content:center;background:#000a;cursor:pointer';
+  nel.innerHTML='<div style="background:#efe6c4;color:#2a2418;width:min(420px,86vw);padding:22px 24px;border-radius:4px;box-shadow:0 0 40px #000;font:20px/1.45 \'Comic Sans MS\',cursive;transform:rotate(-1.2deg)"><div id="nt"></div><div style="margin-top:16px;font:13px Arial;color:#8a7a50;text-align:center">tap or click to close</div></div>';
+  nel.onclick=closeNote;document.body.appendChild(nel)}
+ $('nt').textContent=t;nel.style.display='flex';ui=1;unlock();if(!m.userData.r){m.userData.r=1;nRead++}msg('Notes found: '+nRead+'/'+NT)};
+const note=(room,x,z,t)=>{RM(room);const m=box(x,1.015,z,.5,.025,.36,0xf3ecd2,0,0x4a4630);m.rotation.y=(rnd()-.5)*.8;addInt(m,'Read note',()=>readNote(t,m),2.8)};
+note(0,-4.3,-4.1,'Welcome, new employee! Rule 1: always smile. Rule 2: never keep Sunny waiting. - Management');
+note(0,4.0,-3.8,'The color code changes every shift. Check the shelf on the right side of the lobby. - Zakir, Founder');
+note(1,-4.3,-20.1,'The Grab Pack lab is next door. Please do not point the blue hand at coworkers. - Muawiya, Co-Founder');
+note(1,4.0,-23.8,'Night shift: I keep hearing knocking inside the left wall of the poster room. It sounds hollow... - L.');
+note(3,-5,-52,'Sunny blueprint v7. He was never finished. We just taught him to smile.');
+note(3,5,-58,'The pillars in Sunny\'s hall hide more than they hold. Something wakes up when a GREEN hand touches the dark behind them.');
+note(4,-4.3,-70.1,'Do NOT go down the stairway. The vents are safer. (They are not.)');
+note(4,4.0,-67.8,'Day 482: Sunny moved last night. Nobody moved him.');
+note(6,-5.9,-105.8,'Create a Friend Day! Every toy deserves a friend... and every friend deserves a toy.');
 
+/* ---- the SECRET hand scanner (hidden low on the wall behind the pillar in Sunny's hall) ---- */
+RM(2);const scn=box(7.62,.75,-44.2,.3,.9,.7,0x2a2d33,0,0x062a10);label('\u270B',.5,.5,'#2f8f4a',null,7.46,1.05,-44.2,-PI/2,70);
+const openSecret=()=>{if(secOpen||!sdoor)return;secOpen=1;const k=solids.indexOf(sdoor);if(k>=0)solids.splice(k,1);secL.intensity=1.3;
+ beep(110,.9,'sawtooth',.12,55);noise(.7,.15,400);fk=.8;anim.push(dt=>{sdoor.position.y+=dt*1.8;if(sdoor.position.y>6){sdoor.visible=false;return 1}});
+ msg('You hear a hidden door slide open somewhere...');obj('A hidden door opened in the poster room. Check the LEFT wall!')};
+grabs.push({m:scn,type:'any',fn:()=>{if(fire&&fire.t!='green'){msg('The scanner ignores the blue hand... try GREEN?');return false}openSecret()}});
+
+/* ---- cut a hidden doorway into the poster room's left wall ---- */
+const w1=rooms[1].children.find(m=>m.geometry&&m.geometry.type=='BoxGeometry'&&Math.abs(m.position.x+8)<.01&&Math.abs(m.position.z+24)<.01&&m.geometry.parameters.depth==16);
+if(w1){const wm=w1.material,k=solids.indexOf(w1);rooms[1].remove(w1);if(k>=0)solids.splice(k,1);RM(1);
+ box(-8,2.5,-19.025,.4,5,6.05,wm,1);box(-8,2.5,-28.225,.4,5,7.55,wm,1);box(-8,4.2,-23.25,.4,1.6,2.4,wm,1);
+ sdoor=box(-8,1.7,-23.25,.4,3.4,2.4,wm,1)}
+
+/* ---- the secret room ---- */
+const secG=new THREE.Group();scene.add(secG);G=secG;const sw=wallMat(0x4a2a3a);
+box(-14.05,-.1,-23.5,12.2,.2,12.4,woodM);box(-14.05,5.1,-23.5,12.2,.2,12.4,ceilM);
+box(-20.1,2.5,-23.5,.4,5,12.4,sw,1);box(-14,2.5,-17.4,12.4,5,.4,sw,1);box(-14,2.5,-29.6,12.4,5,.4,sw,1);
+box(-14,.02,-23.5,7,.04,8,0x6a1018);
+shelfW(-19.65,-23.5,8);table(-12.5,-27.3);cones(-17,-23.5,0xffd890);
+label('SUNNY PROTOTYPE ROOM\nversions 1 - 6',3.4,1.2,'#ffd21f','#2a1218',-14,3.3,-17.62,PI,34);
+scrawl('you found me',-14,2.6,-29.37,0,3);scrawl('he was happier here',-19.86,3.2,-21,PI/2,3.4);
+const secL=new THREE.PointLight(0xffb070,0,9);secL.position.set(-14,3.6,-23.5);scene.add(secL);
+const sn=box(-12.5,1.015,-27.3,.5,.025,.36,0xf3ecd2,0,0x4a4630);
+addInt(sn,'Read note',()=>readNote('If you are reading this, you found the first Sunny room. We built Sunny to make children happy. Please take the Golden Sunny... and keep smiling. - Zakir and Muawiya, 1984',sn),2.8);
+
+/* ---- the secret item: the Golden Sunny plush ---- */
+const mkGold=()=>{const g=new THREE.Group(),m=M(0xffc21a,0x6a4500,{metalness:.5,roughness:.35}),dk=M(0x050505);
+ mk(new THREE.SphereGeometry(.28,16,12),m,0,.28,0,g).scale.set(1,1.1,.8);mk(new THREE.SphereGeometry(.24,16,12),m,0,.7,0,g);
+ for(let i=0;i<10;i++){const a=i/10*PI*2,c=mk(new THREE.ConeGeometry(.07,.2,5),m,Math.cos(a)*.31,.7+Math.sin(a)*.31,0,g);c.rotation.z=a-PI/2}
+ [-.08,.08].forEach(x=>mk(new THREE.SphereGeometry(.03,8,8),dk,x,.74,.22,g));mk(new THREE.TorusGeometry(.08,.012,6,12,PI),dk,0,.66,.23,g).rotation.z=PI;
+ [-1,1].forEach(s=>{mk(new THREE.SphereGeometry(.07,8,8),m,s*.32,.3,0,g);mk(new THREE.SphereGeometry(.08,8,8),m,s*.12,.05,.06,g)});return g};
+box(-17,.5,-23.5,1.2,1,1.2,0x2a2a30,1);
+const gold=mkGold();gold.rotation.y=PI/2;gold.position.set(-17,1.12,-23.5);secG.add(gold);
+addInt(gold,'Take the Golden Sunny plush',()=>{S.gold=1;gold.visible=false;fk=1;jingle();beep(1200,.5,'triangle',.15,2000);inv();msg('You found the GOLDEN SUNNY PLUSH! (secret item)');obj('You found the secret! Now get back to the mission.')},3.4);
+anim.push(dt=>{if(!gold.visible)return 1;gold.rotation.y+=dt*.9;gold.position.y=1.12+Math.sin(tt*2)*.05});
+const oi=inv;inv=function(){oi();if(S.gold)$('inv').innerHTML+='<br>\u2B50 Golden Sunny Plush'};
+
+/* ---- hint: soft knocking near the hidden door + hide the room when you're far away ---- */
+setInterval(()=>{if(started&&!ui&&!secOpen&&Math.hypot(px+8,pz+23.25)<9){noise(.14,.5,200,'lowpass');setTimeout(()=>noise(.14,.4,180,'lowpass'),260)}},5500);
+setInterval(()=>{secG.visible=pz>-75},700);
+}
+/* ===== END NOTES + SECRET ROOM ===== */
 /* R9 catwalk, stairs + Toppy */
 RM(9);box(0,-.1,-147,16,.2,6,metalFloor);box(0,-3.1,-158,16,.2,4,woodM);
 for(let s=0;s<8;s++){const tp=-(s+1)*.375,h=tp+3.2;box(0,-3.2+h/2,-150-(s+.5)*.75,14.4,h,.75,woodM)}
