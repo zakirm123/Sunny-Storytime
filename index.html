@@ -385,7 +385,7 @@ t0:["Hello, and welcome to Brothers Playtime Company!","Since nineteen sixty-fou
 t1:["Hello, employee, and welcome to Brothers Playtime Company.","Here, we do not just make toys. We make friends.","Please look around the factory, and find your color code. It will open the way forward.","And a word of advice... if you hear a music box, do not follow it."],
 t2:["Employee, this is the Green and Blue Grab Pack, the G B G P.","We pull the trigger to fire. Pull again to retract. Hold to grip onto an object.","Do NOT do it to a worker. It may cause injury.","The wire is conductive. Use it for wiring.","~(Children) What's the time...? STORYTIME!"],
 t3:["Employee, you have done well with the blue hand.","Now take the green hand too. Together they can complete any circuit.","The vents are the only way forward. Do not look back."],
-t4:["Is this thing recording? Good. Listen closely, because I will not get another chance.","I worked the night shift at Brothers Playtime Company for eleven years. Everyone knows Sunny, the smiling sun. But Sunny was never the only one.","There was Toppy. The very first toy, nineteen sixty-four. They keep her locked in a container at the bottom of the factory. She is awake. She is always awake.","There is Mister Tick-Tock, the clockwork guard. He never sleeps, and he counts every step you take.","There is the Lullaby Lamb, who hums from inside the walls. If you hear her song... do not follow it.","And the Patchwork Twins. Two toys, one smile. They only come out when the lights go out.","We called them our toys. They called us... playmates.","I can hear Sunny in the vents right now. He is looking for me.","Whatever you are doing... stop. Do not go any further. Turn around, and leave through the front door while you still can.","Please. Do not go any further. ...Oh no. The lights."]};
+t4:["Is this thing recording? Good. Listen closely, because I will not get another chance.","I worked the night shift at Brothers Playtime Company for eleven years. Everyone knows Sunny, the smiling sun. But Sunny was never the only one.","There was Toppy. The very first toy, nineteen sixty-four. They keep her locked in a container at the bottom of the factory. She is awake. She is always awake.","There is Sister Longlegs. Tall, and thin as a spider, with long rubbery arms and legs that stretch across a whole room. Pink rubber hair, pink rubber skin. If you hear something stretching in the ceiling... do not look up.","And there is Moony. They made him in the late eighties, to go with Sunny. He taught children to sleep, and not to be afraid of the dark. But here, in this factory... the dark is not his friend anymore.","They are both somewhere deeper in the factory, waiting. I never went far enough to see them again.","We called them our toys. They called us... playmates.","I can hear Sunny in the vents right now. He is looking for me.","Whatever you are doing... stop. Do not go any further. Turn around, and leave through the front door while you still can.","Please. Do not go any further. ...Oh no. The lights."]};
 T.ad=["Nineteen sixty-four. Brothers Playtime Company proudly presents...","Toppy! The doll who loves you back!","She smiles! She waves! She even sings you to sleep!","Every little girl deserves a friend who will never, ever leave her side.","Toppy. Now at your local toy store, for only four ninety-nine!","Toppy... will never let you go."];
 function playTape(id,mn){taping=1;ttsOK=null;obj('Listening to the tape...');hiss(1);
  if(mn){mn.mode='play';mn.tid=id;mn.li=0;mn.t0=tt;curMon=mn;monL.position.set(mn.x,1.9,mn.z+.9);monL.intensity=.9;mn.pl.material.emissive.set(0x0a3a0a)}
@@ -850,13 +850,34 @@ function mkMyst(){const g=new THREE.Group(),m=M(0x08080a,0x020203,{roughness:1})
  mk(new THREE.CylinderGeometry(.5,.7,1.8,12),m,0,1.4,0,g);mk(new THREE.SphereGeometry(.65,16,12),m,0,2.7,0,g);
  [-.25,.25].forEach(x=>mk(new THREE.SphereGeometry(.08,8,8),M(0xffffff,0xffffff),x,2.8,.55,g));
  [-1,1].forEach(s=>mk(new THREE.BoxGeometry(.2,1.3,.2),m,s*.75,1.5,0,g));[-.25,.25].forEach(x=>mk(new THREE.BoxGeometry(.25,.9,.25),m,x,.45,0,g));return g}
-const CH=[
+ function mkLong(){const g=new THREE.Group(),pk=M(0xff7fb0,0x2a0a18,{roughness:.35}),jn=M(0xd14a86,0x200510,{roughness:.4}),hr=M(0xff4f9a,0x300818,{roughness:.3}),dk=M(0x050505);
+ const seg=(a,b,r,m)=>{const d=new THREE.Vector3(b[0]-a[0],b[1]-a[1],b[2]-a[2]),l=d.length(),s=mk(new THREE.CylinderGeometry(r,r*.8,l,8),m||pk,(a[0]+b[0])/2,(a[1]+b[1])/2,(a[2]+b[2])/2,g);s.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),d.normalize())};
+ const limb=(a,b,c,r)=>{seg(a,b,r);seg(b,c,r*.85);mk(new THREE.SphereGeometry(r*1.2,8,6),jn,b[0],b[1],b[2],g);mk(new THREE.SphereGeometry(r*1.1,8,6),jn,c[0],c[1],c[2],g)};
+ mk(new THREE.CylinderGeometry(.2,.3,1.7,12),pk,0,3.35,0,g);mk(new THREE.SphereGeometry(.32,10,8),jn,0,2.5,0,g);mk(new THREE.CylinderGeometry(.09,.12,.4,8),pk,0,4.3,0,g);mk(new THREE.SphereGeometry(.4,16,12),pk,0,4.7,0,g);
+ [-1,1].forEach(s=>{mk(new THREE.SphereGeometry(.07,8,8),dk,s*.15,4.75,.34,g);mk(new THREE.SphereGeometry(.02,6,6),M(0xffffff,0xffffff),s*.15+.02,4.78,.4,g);
+  limb([s*.2,2.5,0],[s*1.3,3.3,.1],[s*2.1,.05,.35],.1);limb([s*.25,4.05,0],[s*1.5,4.6,.2],[s*2,2.3,.8],.075);limb([s*.2,3.7,-.1],[s*1.2,2.4,-.9],[s*1.7,.05,-.6],.07)});
+ mk(new THREE.TorusGeometry(.1,.018,6,12,PI),dk,0,4.58,.37,g).rotation.z=PI;
+ for(let i=0;i<14;i++){const a=i/14*PI*2,c=Math.cos(a),s=Math.sin(a);seg([c*.2,5.05,s*.2],[c*.62,4.75,s*.62],.045,hr);seg([c*.62,4.75,s*.62],[c*.75+Math.sin(i)*.1,3.9,s*.75],.04,hr)}
+ return g}
+function mkMoony(){const g=new THREE.Group(),sk=M(0xe9e3ff,0x14102a,{roughness:.6}),cr=M(0xc3b8ee,0,{roughness:.8}),nv=M(0x1c2a5a,0x05081a,{roughness:.8}),cap=M(0x2f46b0,0x0a1030,{roughness:.8}),yl=M(0xffd23a,0xaa8800),dk=M(0x1a1a2a);
+ mk(new THREE.CylinderGeometry(.5,.62,1.1,16),nv,0,.95,0,g);
+ [[.2,1.1,.5],[-.25,.85,.55],[.05,.6,.6],[-.3,1.25,.4],[.32,.75,.5]].forEach(([x,y,z])=>mk(new THREE.OctahedronGeometry(.07),yl,x,y,z,g));
+ mk(new THREE.SphereGeometry(.76,20,16),sk,0,2.1,0,g);
+ [[-.35,2.5,.62,.13],[.4,1.95,.6,.16],[-.1,1.75,.72,.1],[.1,2.6,.7,.08],[-.55,1.9,.5,.11]].forEach(([x,y,z,r])=>{const c=mk(new THREE.SphereGeometry(r,8,6),cr,x,y,z,g);c.scale.z=.35});
+ [-1,1].forEach(s=>{mk(new THREE.TorusGeometry(.11,.026,6,12,PI),dk,s*.26,2.15,.7,g).rotation.z=PI;mk(new THREE.SphereGeometry(.1,8,6),M(0xffb0c8,0x331018),s*.42,1.92,.62,g).scale.set(1,.7,.4);
+  mk(new THREE.CylinderGeometry(.09,.08,.7,8),sk,s*.68,.95,0,g).rotation.z=s*.25;mk(new THREE.CylinderGeometry(.14,.14,.5,10),nv,s*.27,.15,0,g);mk(new THREE.SphereGeometry(.2,10,8),sk,s*.27,-.1,.06,g)});
+ mk(new THREE.TorusGeometry(.09,.022,6,12,PI),dk,0,1.85,.74,g).rotation.z=PI;
+ const hat=mk(new THREE.ConeGeometry(.62,1.4,16),cap,-.15,3.05,0,g);hat.rotation.z=.45;mk(new THREE.SphereGeometry(.14,10,8),yl,-.45,3.72,0,g);
+ const st=mk(new THREE.OctahedronGeometry(.22),yl,.95,1.35,.1,g);st.scale.set(1,1.15,.4);return g}
+ const CH=[
  {n:'Sunny',role:'The Sunshine Toy \u2022 Chapter 1 antagonist',d:"Brothers Playtime Co.'s best selling toy of 1986. He only wants to play... and he never stops smiling.",mk:()=>mkSunny(),cy:2.3,d2:10.5,ani:1},
  {n:'Toppy',role:'The First Toy \u2022 1964',d:'The very first toy Brothers Playtime Co. ever made. A living doll, kept locked inside her container.',mk:mkToppy,cy:1.6,d2:6.9},
  {n:'Turtle Plush',role:'Create a Friend Day toy',d:'A soft green turtle from the Create a Friend room. Place it in the container to start the machine.',mk:mkTurtle,cy:.75,d2:5.8},
  {n:'The Employee (You)',role:'Player',d:'A brand new factory worker. Carries the Green and Blue Grab Pack, and keeps their fingers pointed up.',mk:mkEmp,cy:1.4,d2:7.2},
  {n:'The Tape Narrator',role:'Voice only',d:'A calm company voice that greets every new employee on the old orientation tapes. Nobody knows who he is.',mk:mkTape,cy:1.4,d2:8.6},
- {n:'???',role:'Locked \u2022 Coming in a future chapter',d:'Something else lives inside the factory... An old tape whispers about Mister Tick-Tock, the Lullaby Lamb and the Patchwork Twins.',mk:mkMyst,cy:1.7,d2:7.6}];
+ {n:'Sister Longlegs',role:'Coming in Chapter 2',d:'A tall, slender, pink spider-like human-toy hybrid with long, stretchy, rubbery limbs and rubbery pink hair. She comes in Chapter 2.',mk:mkLong,cy:2.5,d2:15.5},
+ {n:'Moony',role:'Coming in Chapter 2 \u2022 The Bedtime Toy',d:'Introduced by Brothers Playtime Co. in the late 1980s as a companion piece to Sunny. Moony starred in the winding-down segments, teaching children about sleep and overcoming their fear of the dark. He comes in Chapter 2.',mk:mkMoony,cy:1.9,d2:11},
+ {n:'???',role:'Locked \u2022 Coming in a future chapter',d:'Something else lives inside the factory...',mk:mkMyst,cy:1.7,d2:7.6}];
 let chOn=0,chInit=0,PR,PS,PC,chs=[];
 function initChars(){if(chInit)return;chInit=1;
  PR=new THREE.WebGLRenderer({antialias:true,alpha:true});PR.setSize(240,285);PR.setPixelRatio(1);PR.outputEncoding=THREE.sRGBEncoding;PR.toneMapping=THREE.ACESFilmicToneMapping;
