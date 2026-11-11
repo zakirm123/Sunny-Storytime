@@ -1281,4 +1281,46 @@ var b=document.createElement('button');b.className='mb';b.textContent='CHAPTER S
 var cr=$('cred');cr.innerHTML=cr.innerHTML.replace('Chapter 2 coming soon...','Chapter 2: Lights Out is ready!');
 new MutationObserver(function(){if(cr.style.display==='block')setTimeout(showSel,35000)}).observe(cr,{attributes:true,attributeFilter:['style']});
 })();
+</script><script>
+(function(){
+var ta=document.getElementById('ch2src');if(!ta)return;
+var s=ta.value;
+function rep(a,b){if(s.indexOf(a)<0){console.warn('ch2 patch missed: '+a.slice(0,50));return}s=s.replace(a,function(){return b})}
+
+/* code that runs INSIDE Chapter 2: fixed touch controls + Grab Pack hands */
+function NEW(){
+ var jy=$('joy'),jid=null,lid=null,lx=0,ly=0;
+ function jm(t){var r=jy.getBoundingClientRect();J.x=Math.max(-1,Math.min(1,(t.clientX-r.left-60)/50));J.y=Math.max(-1,Math.min(1,(t.clientY-r.top-60)/50))}
+ jy.ontouchstart=function(e){e.preventDefault();e.stopPropagation();var t=e.changedTouches[0];jid=t.identifier;jm(t)};
+ jy.ontouchmove=function(e){e.preventDefault();e.stopPropagation();for(var i=0;i<e.changedTouches.length;i++){var t=e.changedTouches[i];if(t.identifier===jid)jm(t)}};
+ var je=function(e){for(var i=0;i<e.changedTouches.length;i++)if(e.changedTouches[i].identifier===jid){jid=null;J.x=J.y=0}};
+ jy.ontouchend=je;jy.ontouchcancel=je;
+ var cv=R.domElement;
+ cv.ontouchstart=function(e){e.preventDefault();if(lid===null){var t=e.changedTouches[0];lid=t.identifier;lx=t.clientX;ly=t.clientY}};
+ cv.ontouchmove=function(e){e.preventDefault();for(var i=0;i<e.changedTouches.length;i++){var t=e.changedTouches[i];if(t.identifier===lid){if(!menu&&!P.fz&&!busy){P.yaw-=(t.clientX-lx)*.006;P.pit=Math.max(-1.4,Math.min(1.4,P.pit-(t.clientY-ly)*.006))}lx=t.clientX;ly=t.clientY}}};
+ var le=function(e){for(var i=0;i<e.changedTouches.length;i++)if(e.changedTouches[i].identifier===lid)lid=null};
+ cv.ontouchend=le;cv.ontouchcancel=le;
+ [['bu',use],['bf',function(){fire()}]].forEach(function(p){var b=$(p[0]);b.ontouchstart=function(e){e.preventDefault();e.stopPropagation();p[1]()};b.ontouchend=function(e){e.preventDefault()}});
+ function glv(c){var g=new T.Group(),i=new T.Group(),m=M(c,{emissive:c,emissiveIntensity:.3});i.rotation.x=-1.15;g.add(i);bxm(i,.12,.06,.14,m,0,0,0);[-.04,-.013,.013,.04].forEach(function(x){bxm(i,.022,.025,.1,m,x,0,.11)});bxm(i,.05,.03,.07,m,-.075,0,.03).rotation.y=-.5;g.rotation.y=PI;g.rotation.x=.15;g.traverse(function(o){o.castShadow=false});return g}
+ var hv={b:glv(0x2a62ff),g:glv(0x22bb44),p:glv(0xb050ff)},kick={b:0,g:0,p:0};
+ hv.b.position.set(-.3,-.3,-.55);hv.g.position.set(.3,-.3,-.55);hv.p.position.set(0,-.36,-.5);
+ for(var k in hv)cam.add(hv[k]);
+ (function hl(){requestAnimationFrame(hl);var t=performance.now()/1000,n=0;for(var k in hv){var h=hv[k],by=k=='p'?-.36:-.3;h.visible=!!(!menu&&G&&S[k]&&!busy);kick[k]=Math.max(0,kick[k]-.07);h.position.z=-.55-kick[k]*.3;h.position.y=by+Math.sin(t*1.6+n++)*.006+kick[k]*.04}})();
+ var _f=fire;fire=function(){if(!menu&&!P.fz&&!busy){var a=aim('g',24);if(a){var h=a.n=='a'?(S.p?'p':S.g?'g':'b'):a.n;if(S[h])kick[h]=1}}_f()};
+}
+
+/* 1. move Toppy's container to the left so the doorway is free */
+rep("room(-7,-12,7,0,4,0x5a4a52,{n:[0]});","room(-7,-12,7,0,4,0x5a4a52,{n:[0]});var _g0=G.children.length;");
+rep("bx(4,2.4,-.1,2.2,1.1,.1,0x222222);","G.children.slice(_g0).forEach(function(o){o.position.x-=4.6});W.forEach(function(w){if(G.children.indexOf(w[4])>=_g0){w[0]-=4.6;w[2]-=4.6}});bx(4,2.4,-.1,2.2,1.1,.1,0x222222);");
+/* 2. touch controls + Grab Pack hands */
+rep("const col=(x,z)=>W.some(","("+NEW.toString()+")();const col=(x,z)=>W.some(");
+/* 3. you can walk and look around while characters talk */
+rep("const id=++sid,c0=cur;P.fz=1;let i=0;","const id=++sid,c0=cur;let i=0;");
+/* 4. remove doubled walls that flickered */
+rep("wl(0,x0,z0,z1,g.w,H,c);","if(g.w!==false)wl(0,x0,z0,z1,g.w,H,c);");
+rep("wl(0,x1,z0,z1,g.e,H,c)}","if(g.e!==false)wl(0,x1,z0,z1,g.e,H,c)}");
+rep("room(2.5,-38,12,-30,3.4,0x405048,{w:[-35]})","room(2.5,-38,12,-30,3.4,0x405048,{w:false})");
+rep("room(-9,-28,-2.5,-20,3.4,0x5a3040,{e:[-24]})","room(-9,-28,-2.5,-20,3.4,0x5a3040,{e:false})");
+ta.value=s;
+})();
 </script></body></html>
